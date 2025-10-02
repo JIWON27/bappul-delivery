@@ -1,0 +1,25 @@
+### 로그인
+POST http://localhost:8000/user/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "securePass123"
+}
+
+> {%
+  client.global.set("token", "Bearer " + response.body.accessToken);
+%}
+
+### 카테고리 등록
+POST http://localhost:8000/catalog/api/v1/admin/category
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "name": "찜/탕"
+}
+
+### 카테고리 조회
+GET http://localhost:8000/catalog/api/v1/admin/category
+Authorization: {{token}}

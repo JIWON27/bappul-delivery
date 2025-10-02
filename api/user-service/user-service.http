@@ -1,0 +1,76 @@
+### 회원가입
+POST http://localhost:8000/api/v1/users
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "securePass123",
+  "phoneNumber": "01012345678",
+  "nickname": "guest",
+  "gender": "FEMALE",
+  "birthDate": "2001-05-12"
+}
+
+### 회원가입 - 이메일 중복
+POST http://localhost:8000/api/v1/users
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "securePass123",
+  "phoneNumber": "01012345678",
+  "nickname": "test",
+  "gender": "MALE",
+  "birthDate": "1995-06-15"
+}
+
+### 회원가입 - 닉네임 중복
+POST http://localhost:8000/api/v1/users
+Content-Type: application/json
+
+{
+  "email": "user2@example.com",
+  "password": "securePass123",
+  "phoneNumber": "01012345678",
+  "nickname": "guest",
+  "gender": "MALE",
+  "birthDate": "1995-06-15"
+}
+
+### 회원정보 조회 - ID 기반
+GET http://localhost:8000/api/v1/users/1
+Authorization: {{token}}
+
+### 회원정보 조회 - UUID 기반
+GET http://localhost:8000/api/v1/users/uuid/b230e86d-50f5-455b-9742-28b81460e55e
+Authorization: {{token}}
+
+### 로그인
+POST http://localhost:8000/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "securePass123"
+}
+
+> {%
+  client.global.set("token", "Bearer " + response.body.access_token);
+%}
+
+### 회원 주소 등록
+POST http://localhost:8000/api/v1/address
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "alias" : "집",
+  "zipcode" : "00000",
+  "roadAddress" : "땡땡로 00번",
+  "detailAddress" : "00동 00호",
+  "isDefault" :  true
+}
+
+### 회원 주소 조회
+GET http://localhost:8000/api/v1/address
+Authorization: {{token}}

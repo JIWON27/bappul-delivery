@@ -1,0 +1,42 @@
+### 관리자 로그인
+POST http://localhost:8000/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "securePass123"
+}
+
+> {%
+  client.global.set("token", "Bearer " + response.body.accessToken);
+%}
+
+### 3) 결제 성공 트리거
+GET http://localhost:8000/api/v1/payments/fake/validation?mode=SUCCESS
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "impUid" : "order-test-fake-imp-uid",
+  "merchantUid" : "order-1-d392f711-dfa5-45dd-84f5-8af9e4e322e1"
+}
+
+### 4) 결제 실패 트리거
+GET http://localhost:8000/api/v1/payments/fake/validation?mode=FAIL
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "impUid" : "order-test-fake-imp-uid",
+  "merchantUid" : "order-1-7cae86f9-ad6b-488a-9040-a18c9ef03f20"
+}
+
+### 5) 승인 전 취소
+GET http://localhost:8000/api/v1/payments/fake/validation?mode=CANCEL
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "impUid" : "order-test-fake-imp-uid",
+  "merchantUid" : "order-1-b8ba2f7f-2e14-49ea-9374-0fe137db594f"
+}

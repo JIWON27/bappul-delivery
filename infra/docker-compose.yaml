@@ -1,0 +1,49 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: bappul-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      TZ: Asia/Seoul
+    ports:
+      - "13308:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d
+    command: [
+      "--character-set-server=utf8mb4",
+      "--default-time-zone=+09:00",
+      "--innodb_flush_log_at_trx_commit=1",
+      "--binlog_expire_logs_seconds=604800"
+    ]
+  redis:
+    image: redis:latest
+    container_name: bappul-redis
+    volumes:
+      - ./redis/redis-data:/data
+    ports:
+      - "16379:6379"
+    restart: always
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: bappul-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: bappul-kafka
+    ports:
+      - "9092:9092"  # 외부 포트
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: EXTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+

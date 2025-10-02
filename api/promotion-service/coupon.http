@@ -1,0 +1,72 @@
+### 관리자 로그인
+POST http://localhost:8000/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "securePass123"
+}
+
+> {%
+  client.global.set("token", "Bearer " + response.body.accessToken);
+%}
+
+### 회원 로그인
+POST http://localhost:8000/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "securePass123"
+}
+
+> {%
+  client.global.set("token", "Bearer " + response.body.accessToken);
+%}
+
+### 쿠폰 정책 생성
+POST http://localhost:8000/api/v1/admin/coupons/policies
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "couponName": "전메뉴 10% 할인 쿠폰",
+  "discountType": "FIXED",
+  "discountValue": 10000,
+  "minOrderPrice": 30000,
+  "maxDiscountPrice": 10000,
+  "expirationType": "FIXED_PERIOD",
+  "issueMode": "NORMAL",
+  "activeStatus": "ACTIVE",
+  "startDate": "2025-09-20T00:00:00",
+  "endDate": "2025-10-31T23:59:59",
+  "perUserLimit": 1,
+  "totalQuantity": 100
+}
+
+### 쿠폰 정책 조회
+GET http://localhost:8000/api/v1/admin/coupons/policies/1
+Authorization: {{token}}
+
+### 실물 쿠폰 대량 생산
+POST http://localhost:8000/api/v1/admin/coupons
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "couponPolicyId": 1,
+  "quantity": 50,
+  "prefix" : "2025BIGEVENT",
+  "couponType" : "ONLINE",
+  "issueMode" : "FIRST_COME"
+}
+
+### 온라인 쿠폰 발급
+POST http://localhost:8000/api/v1/coupons/policies/1
+Content-Type: application/json
+Authorization: {{token}}
+
+
+### 선착순 쿠폰 발급 요청 API
+POST http://localhost:8000/api/v1/coupons/policies/1/firstcome
+Authorization: {{token}}

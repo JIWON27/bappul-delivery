@@ -1,0 +1,34 @@
+CREATE TABLE carts (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  store_id BIGINT NOT NULL,
+  store_name VARCHAR(20) NOT NULL,
+  user_id BIGINT NOT NULL,
+  status VARCHAR(10) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE cart_items (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    cart_id BIGINT NOT NULL,
+    menu_id BIGINT NOT NULL,
+    menu_name VARCHAR(30) NOT NULL,
+    quantity INT NOT NULL,
+    base_price_snapshot DECIMAL(10,0) NOT NULL,
+    option_price_snapshot DECIMAL(10,0) NOT NULL,
+    unit_price_snapshot DECIMAL(10,0) NOT NULL,
+    line_total_snapshot DECIMAL(10,0) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE cart_item_options (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  menu_id BIGINT NOT NULL,
+  cart_item_id BIGINT NOT NULL,
+  menu_option_value_id BIGINT NOT NULL,
+  menu_option_value_name VARCHAR(30) NOT NULL,
+  option_price_snapshot DECIMAL(10,0) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

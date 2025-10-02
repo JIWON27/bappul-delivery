@@ -1,0 +1,33 @@
+### 회원 로그인
+POST http://localhost:8000/user/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "securePass123"
+}
+
+> {%
+  client.global.set("token", "Bearer " + response.body.accessToken);
+%}
+
+### 장바구니 아이템 추가
+POST http://localhost:8000/cart/api/v1/carts
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "storeId": 1,
+  "items" : [
+    {
+      "menuId": 2,
+      "optionValueIds": [3, 6],
+      "quantity": 2
+    }
+  ]
+}
+
+### 장바구니 조회
+GET http://localhost:8000/cart/api/v1/carts
+Authorization: {{token}}
+Accept: application/json

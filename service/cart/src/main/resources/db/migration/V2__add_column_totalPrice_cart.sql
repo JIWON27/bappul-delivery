@@ -1,0 +1,2 @@
+ALTER TABLE carts
+ADD COLUMN total_price DECIMAL(10,0) NOT NULL;

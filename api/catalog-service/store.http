@@ -1,0 +1,97 @@
+### 로그인
+POST http://localhost:8000/user/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "user2@example.com",
+  "password": "securePass123"
+}
+
+> {%
+  client.global.set("token", "Bearer " + response.body.accessToken);
+%}
+
+### 가게 검색
+GET http://localhost:8000/catalog/api/v1/stores/search
+Content-Type: application/json
+
+
+### 가게 등록
+POST http://localhost:8000/catalog/api/v1/admin/stores
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "categoryId" : 3,
+  "name": "분식집",
+  "phoneNumber" : "01012345678",
+  "address" : "분식시 분식동 분식리",
+  "introduction" :  "분식집입니다.",
+  "minOrderPrice" : 10000,
+  "deliveryFee" : 4000
+}
+
+### 메뉴 등록
+POST http://localhost:8000/catalog/api/v1/owner/stores/3/menus
+Authorization: {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="menu"
+Content-Type: application/json
+
+{
+  "name": "오뎅",
+  "price": 10000,
+  "description": "오뎅"
+}
+--boundary
+Content-Disposition: form-data; name="option"
+Content-Type: application/json
+
+{
+  "optionItemRequests": [
+    {
+      "groupName": "소스 추가",
+      "optionValues": [
+        { "name": "머스터드",   "additionalPrice": 0 },
+        { "name": "갈릭디핑",   "additionalPrice": 500 },
+        { "name": "스위트칠리", "additionalPrice": 500 },
+        { "name": "치즈소스",   "additionalPrice": 1000 }
+      ]
+    },
+    {
+      "groupName": "매운맛 선택",
+      "optionValues": [
+        { "name": "순한맛",   "additionalPrice": 0 },
+        { "name": "착한맛",   "additionalPrice": 0 },
+        { "name": "보통맛",   "additionalPrice": 0 },
+        { "name": "매운맛", "additionalPrice": 0 }
+      ]
+    },
+    {
+      "groupName": "사이드 메뉴 추가",
+      "optionValues": [
+        { "name": "감자튀김",    "additionalPrice": 3000 },
+        { "name": "치즈볼(4ea)", "additionalPrice": 3500 }
+      ]
+    },
+    {
+      "groupName": "음료 추가",
+      "optionValues": [
+        { "name": "코카콜라 500ml",  "additionalPrice": 2000 },
+        { "name": "코카콜라 1.25L", "additionalPrice": 3000 },
+        { "name": "스프라이트 500ml", "additionalPrice": 2000 },
+        { "name": "제로콜라 500ml", "additionalPrice": 2000 },
+        { "name": "환타 오렌지 500ml", "additionalPrice": 2000 }
+      ]
+    }
+  ]
+}
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="photo.jpg"
+Content-Type: image/jpeg
+
+< /Users/minjiwon/Desktop/sparta/spart-java-2-final-project/api/catalog-service/chicken.jpeg
+--boundary--

@@ -1,0 +1,34 @@
+CREATE TABLE coupon_policies (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    coupon_name VARCHAR(255) NOT NULL,
+    discount_type VARCHAR(20) NOT NULL,
+    discount_value DECIMAL(10, 0) NOT NULL,
+    min_order_price DECIMAL(10, 0) DEFAULT NULL,
+    max_discount_price DECIMAL(10, 0) DEFAULT NULL,
+    expiration_type VARCHAR(20) NOT NULL,
+    issue_mode VARCHAR(10) NOT NULL,
+    valid_days INT DEFAULT NULL,
+    start_date DATETIME NOT NULL,
+    end_date DATETIME NOT NULL,
+    per_user_limit INT NOT NULL DEFAULT 1,
+    total_quantity INT DEFAULT NULL,
+    issued_quantity INT NOT NULL DEFAULT 0,
+    redeemed_quantity INT NOT NULL DEFAULT 0,
+    active_status VARCHAR(10) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE coupons (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(255) UNIQUE,
+    user_id BIGINT DEFAULT NULL,
+    coupon_policy_id BIGINT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'CREATED',
+    type VARCHAR(20) NOT NULL DEFAULT 'ONLINE' COMMENT 'ONLINE, OFFLINE',
+    issued_at DATETIME DEFAULT NULL,
+    expires_at DATETIME DEFAULT NULL,
+    used_at DATETIME DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

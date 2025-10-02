@@ -1,0 +1,60 @@
+### 회원 로그인
+POST http://localhost:8000/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "securePass123"
+}
+
+> {%
+  client.global.set("token", "Bearer " + response.body.accessToken);
+%}
+
+### 주문 생성 - 쿠폰 O
+POST http://localhost:8000/api/v1/orders
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "storeId": 1,
+  "idempotencyKey": "order-test-20250925-0001",
+  "addressId": 1,
+  "couponId": 1,
+  "clientPayableWon": 35000,
+  "orderItems": [
+    {
+      "menuId": 2,
+      "optionValueIds": [3, 6],
+      "quantity": 2
+    }
+  ],
+  "cartItemIds": [1],
+  "deliveryFee": 3000
+}
+
+### 주문 생성 - 쿠폰 X
+POST http://localhost:8000/api/v1/orders
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "storeId": 1,
+  "idempotencyKey": "order-test-20250925-0001",
+  "addressId": 1,
+  "couponId": null,
+  "clientPayableWon": 35000,
+  "orderItems": [
+    {
+      "menuId": 2,
+      "optionValueIds": [3, 6],
+      "quantity": 2
+    }
+  ],
+  "cartItemIds": [1],
+  "deliveryFee": 3000
+}
+
+### 주문 취소
+POST http://localhost:8000/api/v1/orders/1/cancel
+Authorization: {{token}}

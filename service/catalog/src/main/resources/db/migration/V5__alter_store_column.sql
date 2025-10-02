@@ -1,0 +1,2 @@
+ALTER TABLE stores
+CHANGE COLUMN owner_id user_id BIGINT NOT NULL;

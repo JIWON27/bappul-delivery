@@ -1,0 +1,37 @@
+### 관리자 로그인
+POST http://localhost:8000/user/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "securePass123"
+}
+
+> {%
+  client.global.set("token", "Bearer " + response.body.access_token);
+%}
+
+### 회원 로그인
+POST http://localhost:8000/user/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "securePass123"
+}
+
+> {%
+  client.global.set("token", "Bearer " + response.body.accessToken);
+%}
+
+### 메뉴 단건 조회
+GET http://localhost:8000/catalog/api/v1/menus/3
+
+### 메뉴 품절 설정 API
+PATCH http://localhost:8000/catalog/api/v1/owner/menus/1?soldOut=false
+Authorization: {{token}}
+
+### 메뉴 옵션 품절 설정 API
+PATCH http://localhost:8000/catalog/api/v1/owner/menus/options/9?soldOut=true
+Authorization: {{token}}
+
