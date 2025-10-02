@@ -7,16 +7,8 @@ assignees: JIWON27
 
 ---
 
----
-name: "✅ Feature"
-about: "새로운 기능 추가"
-title: ""
-labels: ["feature"]
-assignees: []
----
-
 ## 📄 설명
-> 새로운 기능에 대한 설명을 작성해 주세요. (간결하게)
+- 새로운 기능에 대한 설명을 작성해 주세요.
 
 ## ✅ 작업할 내용
 - [ ] 항목 1
