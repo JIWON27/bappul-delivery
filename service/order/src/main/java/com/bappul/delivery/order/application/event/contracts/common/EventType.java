@@ -9,6 +9,10 @@ import lombok.experimental.FieldDefaults;
 public enum EventType {
   COUPON_ROLLBACK("coupon-rollback"),
   COUPON_USED("coupon-used"),
+
+  ORDER_CANCEL("order-cancel"),
+  ORDER_READY("order-ready"),
+  ORDER_REJECTED("order-reject"),
   ;
 
   final String kafkaTopic;
