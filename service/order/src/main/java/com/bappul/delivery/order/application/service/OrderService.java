@@ -4,6 +4,7 @@ import static com.bappul.delivery.order.exception.ServiceExceptionCode.JSON_SERI
 
 import com.bappul.delivery.order.application.event.contracts.common.AggregateType;
 import com.bappul.delivery.order.application.event.contracts.common.EventType;
+import com.bappul.delivery.order.application.event.contracts.order.OrderAcceptEvent;
 import com.bappul.delivery.order.application.event.contracts.order.OrderCancelEvent;
 import com.bappul.delivery.order.application.event.contracts.order.OrderReadyEvent;
 import com.bappul.delivery.order.application.event.contracts.order.OrderRejectEvent;
@@ -193,6 +194,24 @@ public class OrderService {
 
     orderValidator.validateAcceptable(order);
     order.markAsAccepted();
+
+    UUID eventId = UUID.randomUUID();
+
+    OrderAcceptEvent event = new OrderAcceptEvent(orderId, userId);
+    String payload = toJson(event);
+
+    outboxEventRepository.save(OutBoxEvent.builder()
+        .eventId(eventId)
+        .eventType(EventType.ORDER_ACCEPT)
+        .aggregateId(order.getId())
+        .aggregateType(AggregateType.ORDER)
+        .partitionKey(order.getId().toString())
+        .payload(payload)
+        .status(OutboxStatus.PENDING)
+        .occurredAt(LocalDateTime.now())
+        .build());
+    OutboxRecorded outboxRecorded = new OutboxRecorded(eventId, EventType.ORDER_ACCEPT);
+    eventPublisher.publishEvent(outboxRecorded);
 
     // TODO 주문 수락 알림 기능
   }
