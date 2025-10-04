@@ -1,7 +1,13 @@
 package com.bappul.delivery.order.application.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static com.bappul.delivery.order.exception.ServiceExceptionCode.JSON_SERIALIZATION_ERROR;
+
+import com.bappul.delivery.order.application.event.contracts.common.AggregateType;
+import com.bappul.delivery.order.application.event.contracts.common.EventType;
 import com.bappul.delivery.order.application.event.contracts.order.OrderCancelEvent;
+import com.bappul.delivery.order.application.event.contracts.order.OrderReadyEvent;
+import com.bappul.delivery.order.application.event.contracts.order.OrderRejectEvent;
+import com.bappul.delivery.order.application.event.producer.OutboxRecorded;
 import com.bappul.delivery.order.application.validator.OrderValidator;
 import com.bappul.delivery.order.client.CatalogClient;
 import com.bappul.delivery.order.client.CouponClient;
@@ -13,29 +19,31 @@ import com.bappul.delivery.order.client.response.CartItemCalculateResponse;
 import com.bappul.delivery.order.client.response.CouponDiscountCalculateResponse;
 import com.bappul.delivery.order.client.response.OptionPerPrice;
 import com.bappul.delivery.order.client.response.PricingInternalResponse;
-import com.bappul.delivery.order.domain.entitiy.DeliveryStatus;
 import com.bappul.delivery.order.domain.entitiy.Order;
 import com.bappul.delivery.order.domain.entitiy.OrderLine;
 import com.bappul.delivery.order.domain.entitiy.OrderLineOption;
 import com.bappul.delivery.order.domain.entitiy.OrderStatus;
-import com.bappul.delivery.order.domain.entitiy.PaymentStatus;
+import com.bappul.delivery.order.domain.entitiy.OutBoxEvent;
+import com.bappul.delivery.order.domain.entitiy.OutboxStatus;
 import com.bappul.delivery.order.domain.repository.OrderLineOptionRepository;
 import com.bappul.delivery.order.domain.repository.OrderLineRepository;
 import com.bappul.delivery.order.domain.repository.OrderRepository;
+import com.bappul.delivery.order.domain.repository.OutboxEventRepository;
 import com.bappul.delivery.order.web.v1.request.OrderRequest;
 import com.bappul.delivery.order.web.v1.response.OrderResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import exception.ServiceException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +54,8 @@ public class OrderService {
   private final OrderRepository orderRepository;
   private final OrderLineRepository orderLineRepository;
   private final OrderLineOptionRepository orderLineOptionRepository;
+  private final OutboxEventRepository outboxEventRepository;
+
   private final OrderValidator orderValidator;
   private final ObjectMapper objectMapper;
   private final KafkaTemplate<String, String> kafkaTemplate;
@@ -53,6 +63,7 @@ public class OrderService {
   private final CatalogClient catalogClient;
   private final CouponClient couponClient;
   private final PaymentClient paymentClient;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   public OrderResponse createOrder(OrderRequest request, Long userId) {
@@ -74,12 +85,14 @@ public class OrderService {
           .userId(userId)
           .price(quote.getTotalPrice())
           .build();
-      CouponDiscountCalculateResponse discountResponse = couponClient.getCouponDiscountCalculate(couponInternalRequest);
+      CouponDiscountCalculateResponse discountResponse = couponClient.getCouponDiscountCalculate(
+          couponInternalRequest);
       discountPrice = discountResponse.getDiscount();
     }
 
     // payablePrice 결제할 가격 계산 -> 총 가격 - 쿠폰 할인가 + 배달비 = 최종 결제 금액
-    BigDecimal payablePrice = quote.getTotalPrice().add(request.getDeliveryFee()).subtract(discountPrice);
+    BigDecimal payablePrice = quote.getTotalPrice().add(request.getDeliveryFee())
+        .subtract(discountPrice);
 
     Order order = Order.builder()
         .orderNo(UUID.randomUUID())
@@ -92,8 +105,6 @@ public class OrderService {
         .cancelReason(null)
         .payableTotal(payablePrice)
         .orderStatus(OrderStatus.CREATED)
-        .deliveryStatus(DeliveryStatus.NONE)
-        .paymentStatus(PaymentStatus.NONE)
         .build();
 
     orderRepository.save(order);
@@ -148,26 +159,108 @@ public class OrderService {
   }
 
   @Transactional
-  public void cancel(Long orderId, Long userId){
+  public void cancel(Long orderId, Long userId) {
+    Order order = orderValidator.getOrderById(orderId);
+    order.markAsCanceled();
+
+    UUID eventId = UUID.randomUUID();
+
+    OrderCancelEvent event = new OrderCancelEvent(orderId, userId);
+    String payload = toJson(event);
+
+    outboxEventRepository.save(OutBoxEvent.builder()
+        .eventId(eventId)
+        .eventType(EventType.ORDER_CANCEL)
+        .aggregateId(order.getId())
+        .aggregateType(AggregateType.ORDER)
+        .partitionKey(order.getId().toString())
+        .payload(payload)
+        .status(OutboxStatus.PENDING)
+        .occurredAt(LocalDateTime.now())
+        .build());
+    OutboxRecorded outboxRecorded = new OutboxRecorded(eventId, EventType.ORDER_CANCEL);
+    eventPublisher.publishEvent(outboxRecorded);
+  }
+
+  @Transactional
+  public void accept(Long storeId, Long orderId, Long userId) {
+    Order order = orderValidator.getOrderById(orderId);
+    orderValidator.validateBelongsToStore(order.getStoreId(), storeId);
+
+    if (order.getOrderStatus() == OrderStatus.ACCEPTED) {
+      return;
+    }
+
+    orderValidator.validateAcceptable(order);
+    order.markAsAccepted();
+
+    // TODO 주문 수락 알림 기능
+  }
+
+  @Transactional
+  public void reject(Long storeId, Long orderId, Long userId) {
+    Order order = orderValidator.getOrderById(orderId);
+    orderValidator.validateBelongsToStore(order.getStoreId(), storeId);
+
+    orderValidator.validateRejectable(order);
+    order.markAsRejected(); // TODO 주문 거절 이유 추가
+
+    UUID eventId = UUID.randomUUID();
+
+    OrderRejectEvent event = new OrderRejectEvent(orderId, userId);
+    String payload = toJson(event);
+
+    outboxEventRepository.save(OutBoxEvent.builder()
+        .eventId(eventId)
+        .eventType(EventType.ORDER_REJECTED)
+        .aggregateId(order.getId())
+        .aggregateType(AggregateType.ORDER)
+        .partitionKey(order.getId().toString())
+        .payload(payload)
+        .status(OutboxStatus.PENDING)
+        .occurredAt(LocalDateTime.now())
+        .build());
+    OutboxRecorded outboxRecorded = new OutboxRecorded(eventId, EventType.ORDER_REJECTED);
+    eventPublisher.publishEvent(outboxRecorded);
+
+    // TODO 주문 거절 알림 기능
+  }
+
+  @Transactional
+  public void ready(Long storeId, Long orderId) {
+    Order order = orderValidator.getOrderById(orderId);
+    orderValidator.validateBelongsToStore(order.getStoreId(), storeId);
+
+    orderValidator.validateReadyable(order);
+    order.markAsReady();
+
+    UUID eventId = UUID.randomUUID();
+
+    OrderReadyEvent event = new OrderReadyEvent(orderId);
+    String payload = toJson(event);
+
+    outboxEventRepository.save(OutBoxEvent.builder()
+        .eventId(eventId)
+        .eventType(EventType.ORDER_READY)
+        .aggregateId(order.getId())
+        .aggregateType(AggregateType.ORDER)
+        .partitionKey(order.getId().toString())
+        .payload(payload)
+        .status(OutboxStatus.PENDING)
+        .occurredAt(LocalDateTime.now())
+        .build());
+
+    OutboxRecorded outboxRecorded = new OutboxRecorded(eventId, EventType.ORDER_READY);
+    eventPublisher.publishEvent(outboxRecorded);
+
+    // TODO 주문 준비 완료 알림
+  }
+
+  private String toJson(Object obj) {
     try {
-      // TODO 주문 취소 가능성 검증 로직 추가 ex. 메뉴 조리중 등
-      Order order = orderValidator.getOrderById(orderId);
-      order.markAsCanceled();
-
-      OrderCancelEvent evt = new OrderCancelEvent(orderId, userId);
-      UUID eventId = UUID.randomUUID();
-
-      Message<String> msg = MessageBuilder
-          .withPayload(objectMapper.writeValueAsString(evt))
-          .setHeader(KafkaHeaders.TOPIC, "order-cancel")
-          .setHeader(KafkaHeaders.KEY, String.valueOf(orderId))
-          .setHeader("event-id", eventId.toString())
-          .setHeader("event-type", "OrderCancelRequested")
-          .setHeader("occurred-at", Instant.now().toString())
-          .build();
-      kafkaTemplate.send(msg);
-    }catch (Exception e) {
-      throw new RuntimeException(e);
+      return objectMapper.writeValueAsString(obj);
+    } catch (JsonProcessingException e) {
+      throw new ServiceException(JSON_SERIALIZATION_ERROR);
     }
   }
 }
