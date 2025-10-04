@@ -1,7 +1,5 @@
 package com.bappul.delivery.payment.application.event.consumer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bappul.delivery.payment.application.event.contracts.common.AggregateType;
 import com.bappul.delivery.payment.application.event.contracts.common.EventType;
 import com.bappul.delivery.payment.application.event.contracts.payment.OrderCancelEvent;
@@ -13,6 +11,8 @@ import com.bappul.delivery.payment.domain.entity.OutBoxEvent;
 import com.bappul.delivery.payment.domain.entity.OutboxStatus;
 import com.bappul.delivery.payment.domain.entity.Payment;
 import com.bappul.delivery.payment.domain.repository.OutboxRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -31,14 +31,14 @@ public class KafkaEventProcessor {
   private final RefundService refundService;
 
   @Transactional
-  public void processOrderCancel(String payload){
+  public void processOrderCancelOrReject(String payload){
     try {
       OrderCancelEvent event = objectMapper.readValue(payload, OrderCancelEvent.class);
       Payment payment = paymentValidator.getPaymentByOrderId(event.getOrderId());
-      String finalImpUid =  payment.getImpUid();
+      String impUid = payment.getImpUid();
 
-      // fake 환불 서비스 호출 -> 환불 성공했다고 가정
-      refundService.fakeCancelPayment(finalImpUid);
+      // TODO fake 환불 서비스 호출
+      refundService.fakeCancelPayment(impUid);
 
       payment.markAsRefunded();
       OutboxRecorded outboxRecorded = recordPaymentRefundedEvent(payment.getMerchantUid(), payment.getOrderId(), payment.getId());

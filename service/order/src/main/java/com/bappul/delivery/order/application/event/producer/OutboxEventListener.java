@@ -37,7 +37,7 @@ public class OutboxEventListener {
           .setHeader(KafkaHeaders.TOPIC, topic)
           .setHeader(KafkaHeaders.KEY, outBox.getPartitionKey())
           .setHeader("event-id", event.getEventId().toString())
-          .setHeader("event-type", outBox.getEventType())
+          .setHeader("event-type", outBox.getEventType().name())
           .setHeader("occurred-at", outBox.getOccurredAt().toString())
           .build();
       log.info(msg.getPayload());

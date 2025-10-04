@@ -15,6 +15,8 @@ public enum ServiceExceptionCode implements ServiceErrorCode {
   UNAUTHORIZED_ORDER_ACCESS("해당 주문은 접근 권한이 없습니다.", 403),
   CANNOT_CANCEL_ORDER_STATUS("주문이 이미 처리되어 취소할 수 없습니다.", 400),
 
+  INVALID_ORDER_STATUS("현재 주문 상태에서는 요청을 수행할 수 없습니다.", 409),
+
   NOT_FOUND_OUTBOX_EVENT("존재하지 않는 아웃박스 이벤트 입니다.", 500),
   JSON_SERIALIZATION_ERROR("JSON 직렬화에 실패했습니다.", 500),
   JSON_DESERIALIZATION_ERROR("JSON 역직렬화에 실패했습니다.", 400),
