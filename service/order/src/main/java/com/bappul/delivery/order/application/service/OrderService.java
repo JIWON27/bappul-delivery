@@ -255,7 +255,13 @@ public class OrderService {
 
     UUID eventId = UUID.randomUUID();
 
-    OrderReadyEvent event = new OrderReadyEvent(orderId);
+    OrderReadyEvent event = OrderReadyEvent.builder()
+        .orderId(order.getId())
+        .latitude(37.5000) // TODO storeId로 Store 조회 후 할당
+        .longitude(127.0300) // TODO storeId로 Store 조회 후 할당
+        .adminCode("11680640") // TODO storeId로 Store 조회 후 할당
+        .legalCode("11680101") // TODO storeId로 Store 조회 후 할당
+        .build();
     String payload = toJson(event);
 
     outboxEventRepository.save(OutBoxEvent.builder()
