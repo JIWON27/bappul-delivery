@@ -57,14 +57,6 @@ public class Order {
   @Column(name = "order_status", nullable = false, length = 30)
   OrderStatus orderStatus; //
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "payment_status", nullable = false, length = 30)
-  PaymentStatus paymentStatus;
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "delivery_status", nullable = false, length = 30)
-  DeliveryStatus deliveryStatus;
-
   @Column(name = "line_total", nullable = false)
   BigDecimal lineTotal; // 해당 주문 총 가격(배달비 제외)
 
@@ -90,8 +82,7 @@ public class Order {
 
   @Builder
   public Order(UUID orderNo, String idempotencyKey, Long userId, Long addressId, Long storeId,
-      Long couponId, OrderStatus orderStatus, PaymentStatus paymentStatus,
-      DeliveryStatus deliveryStatus, BigDecimal lineTotal, BigDecimal deliveryFee,
+      Long couponId, OrderStatus orderStatus, BigDecimal lineTotal, BigDecimal deliveryFee,
       BigDecimal orderDiscount, BigDecimal payableTotal, String cancelReason) {
     this.orderNo = orderNo;
     this.idempotencyKey = idempotencyKey;
@@ -100,8 +91,6 @@ public class Order {
     this.storeId = storeId;
     this.couponId = couponId;
     this.orderStatus = orderStatus;
-    this.paymentStatus = paymentStatus;
-    this.deliveryStatus = deliveryStatus;
     this.lineTotal = lineTotal;
     this.deliveryFee = deliveryFee;
     this.orderDiscount = orderDiscount;
@@ -109,7 +98,31 @@ public class Order {
     this.cancelReason = cancelReason;
   }
 
+  public void markAsPaid() {
+    this.orderStatus = OrderStatus.PAID;
+  }
+
+  public void markAsAccepted() {
+    this.orderStatus = OrderStatus.ACCEPTED;
+  }
+
+  public void markAsRejected() {
+    this.orderStatus = OrderStatus.REJECTED;
+  }
+
+  public void markAsReady() {
+    this.orderStatus = OrderStatus.READY;
+  }
+
+  public void markAsCompleted() {
+    this.orderStatus = OrderStatus.COMPLETED;
+  }
+
   public void markAsCanceled() {
     this.orderStatus = OrderStatus.CANCELED;
+  }
+
+  public void markAsRefunded() {
+    this.orderStatus = OrderStatus.REFUNDED;
   }
 }

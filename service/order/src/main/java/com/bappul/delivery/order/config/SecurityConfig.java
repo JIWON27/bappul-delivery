@@ -39,6 +39,9 @@ public class SecurityConfig {
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(SECURITY_EXCLUDE_PATHS).permitAll()
             .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+            .requestMatchers("/api/v1/stores/*/orders/*/accept").hasRole("OWNER")
+            .requestMatchers("/api/v1/stores/*/orders/*/reject").hasRole("OWNER")
+            .requestMatchers("/api/v1/stores/*/orders/*/ready").hasRole("OWNER")
             .anyRequest().authenticated()
         ).oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter)));
     return http.build();
