@@ -114,6 +114,10 @@ public class Order {
     this.orderStatus = OrderStatus.READY;
   }
 
+  public void markAsPickUp() {
+    this.orderStatus = OrderStatus.PICKED_UP;
+  }
+
   public void markAsCompleted() {
     this.orderStatus = OrderStatus.COMPLETED;
   }
