@@ -51,4 +51,28 @@ public class KafkaEventListener {
     ack.acknowledge();
   }
 
+  @KafkaListener(topics = "delivery-complete", groupId = "order")
+  public void onDeliveryComplete(
+      @Payload String payload,
+      @Header("event-id") String eventId,
+      @Header(value = "event-type", required = false) String eventType,
+      Acknowledgment ack
+  ) throws Exception {
+    log.info("[order - KafkaEventListener] 배달 완료 이벤트 수신 = {}", eventId);
+    orderEventProcessor.processDeliveryComplete(eventId, eventType, payload);
+    ack.acknowledge();
+  }
+
+  @KafkaListener(topics = "delivery-pickup", groupId = "order")
+  public void onDeliveryPickUp(
+      @Payload String payload,
+      @Header("event-id") String eventId,
+      @Header(value = "event-type", required = false) String eventType,
+      Acknowledgment ack
+  ) throws Exception {
+    log.info("[order - KafkaEventListener] 배달 픽업 이벤트 수신 = {}", eventId);
+    orderEventProcessor.processDeliveryPickUp(eventId, eventType, payload);
+    ack.acknowledge();
+  }
+
 }

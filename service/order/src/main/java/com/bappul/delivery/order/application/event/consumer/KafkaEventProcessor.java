@@ -6,6 +6,8 @@ import static com.bappul.delivery.order.exception.ServiceExceptionCode.JSON_SERI
 import com.bappul.delivery.order.application.event.contracts.common.AggregateType;
 import com.bappul.delivery.order.application.event.contracts.common.EventType;
 import com.bappul.delivery.order.application.event.contracts.coupon.CouponEventPayload;
+import com.bappul.delivery.order.application.event.contracts.delivery.DeliveryCompleteEvent;
+import com.bappul.delivery.order.application.event.contracts.delivery.DeliveryPickUpEvent;
 import com.bappul.delivery.order.application.event.contracts.payment.PaymentRefundedEvent;
 import com.bappul.delivery.order.application.event.contracts.payment.PaymentSuccessEvent;
 import com.bappul.delivery.order.application.event.producer.OutboxRecorded;
@@ -44,8 +46,7 @@ public class KafkaEventProcessor {
     InboxEvent inboxEvent = validateAndSaveInboxEvent(eventId, eventType, payload);
 
     try {
-      PaymentSuccessEvent paymentSuccessEvent = objectMapper.readValue(payload,
-          PaymentSuccessEvent.class);
+      PaymentSuccessEvent paymentSuccessEvent = objectMapper.readValue(payload, PaymentSuccessEvent.class);
       Order order = orderValidator.getOrderById(paymentSuccessEvent.getOrderId());
       OutboxRecorded outboxRecorded = recordPaymentEvent(order, EventType.COUPON_USED);
 
@@ -65,8 +66,7 @@ public class KafkaEventProcessor {
     InboxEvent inboxEvent = validateAndSaveInboxEvent(eventId, eventType, payload);
 
     try {
-      PaymentSuccessEvent paymentSuccessEvent = objectMapper.readValue(payload,
-          PaymentSuccessEvent.class);
+      PaymentSuccessEvent paymentSuccessEvent = objectMapper.readValue(payload, PaymentSuccessEvent.class);
       Order order = orderValidator.getOrderById(paymentSuccessEvent.getOrderId());
 
       order.markAsCanceled();
@@ -86,8 +86,7 @@ public class KafkaEventProcessor {
     InboxEvent inboxEvent = validateAndSaveInboxEvent(eventId, eventType, payload);
 
     try {
-      PaymentRefundedEvent paymentFailEvent = objectMapper.readValue(payload,
-          PaymentRefundedEvent.class);
+      PaymentRefundedEvent paymentFailEvent = objectMapper.readValue(payload, PaymentRefundedEvent.class);
       Order order = orderValidator.getOrderById(paymentFailEvent.getOrderId());
       OutboxRecorded outboxRecorded = recordPaymentEvent(order, EventType.COUPON_ROLLBACK);
 
@@ -95,6 +94,41 @@ public class KafkaEventProcessor {
       inboxEvent.markAsProcessed();
 
       eventPublisher.publishEvent(outboxRecorded);
+    } catch (JsonProcessingException e) {
+      inboxEvent.markAsFailed();
+      throw new ServiceException(JSON_DESERIALIZATION_ERROR);
+    }
+  }
+
+  @Transactional
+  public void processDeliveryComplete(String eventId, String eventType, String payload) {
+    InboxEvent inboxEvent = validateAndSaveInboxEvent(eventId, eventType, payload);
+
+    try {
+      // TODO 배달 완료 시 쿠폰 이벤트를 발행하고, 결제 완료 시 쿠폰 예약 이벤트를 발행
+      // TODO 쿠폰 예약 이벤트를 발행하는 이유는 쿠폰 중복 사용을 방지하기 위한 것.
+
+      DeliveryCompleteEvent event = objectMapper.readValue(payload, DeliveryCompleteEvent.class);
+      Order order = orderValidator.getOrderById(event.getOrderId());
+
+      order.markAsCompleted();
+      inboxEvent.markAsProcessed();
+    } catch (JsonProcessingException e) {
+      inboxEvent.markAsFailed();
+      throw new ServiceException(JSON_DESERIALIZATION_ERROR);
+    }
+  }
+
+  @Transactional
+  public void processDeliveryPickUp(String eventId, String eventType, String payload) {
+    InboxEvent inboxEvent = validateAndSaveInboxEvent(eventId, eventType, payload);
+
+    try {
+      DeliveryPickUpEvent event = objectMapper.readValue(payload, DeliveryPickUpEvent.class);
+      Order order = orderValidator.getOrderById(event.getOrderId());
+
+      order.markAsPickUp();
+      inboxEvent.markAsProcessed();
     } catch (JsonProcessingException e) {
       inboxEvent.markAsFailed();
       throw new ServiceException(JSON_DESERIALIZATION_ERROR);
