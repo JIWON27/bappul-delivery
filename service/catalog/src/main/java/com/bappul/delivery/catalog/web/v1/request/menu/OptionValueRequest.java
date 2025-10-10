@@ -10,4 +10,5 @@ import lombok.experimental.FieldDefaults;
 public class OptionValueRequest {
   String name;
   BigDecimal additionalPrice;
+  Boolean soldOut;
 }

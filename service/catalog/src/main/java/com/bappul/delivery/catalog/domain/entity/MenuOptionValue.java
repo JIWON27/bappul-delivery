@@ -45,7 +45,7 @@ public class MenuOptionValue {
   BigDecimal additionalPrice;
 
   @Column(name = "sold_out", nullable = false)
-  Boolean soldOut = false;
+  Boolean soldOut;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
@@ -56,10 +56,12 @@ public class MenuOptionValue {
   LocalDateTime updatedAt;
 
   @Builder
-  public MenuOptionValue(MenuOptionGroup menuOptionGroup, String name, BigDecimal additionalPrice) {
+  public MenuOptionValue(MenuOptionGroup menuOptionGroup, String name, BigDecimal additionalPrice,
+      Boolean soldOut) {
     this.menuOptionGroup = menuOptionGroup;
     this.name = name;
     this.additionalPrice = additionalPrice;
+    this.soldOut = soldOut;
   }
 
   public void updateSoldOut(Boolean soldOut) {

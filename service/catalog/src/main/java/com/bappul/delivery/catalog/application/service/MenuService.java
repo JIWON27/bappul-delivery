@@ -94,25 +94,17 @@ public class MenuService {
     String photoUrl = menuImageService.saveImage(image);
 
     Menu menu = menuMapper.toMenu(store, request, photoUrl);
-    Menu savedMenu = menuRepository.save(menu);
+    menuRepository.save(menu);
 
     for (OptionItemRequest optionItemRequest : optionRequest.getOptionItemRequests()) {
-      MenuOptionGroup menuOptionGroup = MenuOptionGroup.builder()
-          .menu(savedMenu)
-          .name(optionItemRequest.getGroupName())
-          .sortOrder(1) // TODO setOrder 로직 추가
-          .build();
-      MenuOptionGroup savedMenuOptionGroup = menuOptionGroupRepository.save(menuOptionGroup);
+      MenuOptionGroup menuOptionGroup = menuMapper.toMenuOptionGroup(optionItemRequest, menu);
+      menuOptionGroupRepository.save(menuOptionGroup);
 
       List<OptionValueRequest> optionValues = optionItemRequest.getOptionValues();
       List<MenuOptionValue> menuOptionValues = new ArrayList<>();
 
-      for  (OptionValueRequest optionValue : optionValues) {
-        MenuOptionValue menuOptionValue = MenuOptionValue.builder()
-            .menuOptionGroup(savedMenuOptionGroup)
-            .name(optionValue.getName())
-            .additionalPrice(optionValue.getAdditionalPrice())
-            .build();
+      for (OptionValueRequest optionValueRequest : optionValues) {
+        MenuOptionValue menuOptionValue = menuMapper.toMenuOptionValue(optionValueRequest, menuOptionGroup);
         menuOptionValues.add(menuOptionValue);
       }
       menuOptionValueRepository.saveAll(menuOptionValues);

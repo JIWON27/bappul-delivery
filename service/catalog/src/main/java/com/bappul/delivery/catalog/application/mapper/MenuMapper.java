@@ -1,9 +1,12 @@
 package com.bappul.delivery.catalog.application.mapper;
 
 import com.bappul.delivery.catalog.domain.entity.Menu;
+import com.bappul.delivery.catalog.domain.entity.MenuOptionGroup;
 import com.bappul.delivery.catalog.domain.entity.MenuOptionValue;
 import com.bappul.delivery.catalog.domain.entity.Store;
 import com.bappul.delivery.catalog.web.v1.request.menu.MenuRequest;
+import com.bappul.delivery.catalog.web.v1.request.menu.OptionItemRequest;
+import com.bappul.delivery.catalog.web.v1.request.menu.OptionValueRequest;
 import com.bappul.delivery.catalog.web.v1.response.menu.MenuOptionResponse;
 import com.bappul.delivery.catalog.web.v1.response.menu.MenuOptionSetResponse;
 import com.bappul.delivery.catalog.web.v1.response.menu.MenuOptionValueResponse;
@@ -15,11 +18,19 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface MenuMapper {
+  // TODO sortOrder 처리 로직 추가 현재는 임시값.
 
   @Mapping(target = "sortOrder", expression = "java(0)")
   @Mapping(target = "photoUrl", source = "photoUrl")
   @Mapping(target = "name", source = "request.name")
   Menu toMenu(Store store, MenuRequest request, String photoUrl);
+
+  @Mapping(target = "sortOrder", expression = "java(0)")
+  @Mapping(target = "name", source = "request.groupName")
+  MenuOptionGroup toMenuOptionGroup(OptionItemRequest request, Menu menu);
+
+  @Mapping(target = "name", source = "request.name")
+  MenuOptionValue toMenuOptionValue(OptionValueRequest request, MenuOptionGroup menuOptionGroup);
 
   MenuResponse toResponse(Menu menu, MenuOptionResponse  menuOption);
   MenuSummaryResponse toSummaryResponse(Menu menu);

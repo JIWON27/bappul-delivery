@@ -41,7 +41,7 @@ public class MenuOptionGroup {
   String name;
 
   @Column(name = "sort_order", nullable = false)
-  Integer sortOrder = 0;
+  Integer sortOrder;
 
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
