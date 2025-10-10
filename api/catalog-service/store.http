@@ -15,6 +15,8 @@ Content-Type: application/json
 GET http://localhost:8000/api/v1/stores/search
 Content-Type: application/json
 
+### 특정 가게 메뉴 목록 조회
+GET http://localhost:8000/api/v1/stores/1
 
 ### 가게 등록
 POST http://localhost:8000/api/v1/admin/stores
