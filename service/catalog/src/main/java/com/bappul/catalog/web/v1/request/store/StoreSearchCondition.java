@@ -1,0 +1,24 @@
+package com.bappul.catalog.web.v1.request.store;
+
+import com.bappul.catalog.domain.repository.StoreSort;
+import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Builder
+@AllArgsConstructor
+public class StoreSearchCondition {
+  Long categoryId;
+  String keyword;
+  BigDecimal minOrderPriceLte;
+  BigDecimal deliveryFeeLte;
+  StoreSort sort ;
+  String cursor;
+  int size;
+
+  public StoreSort getSortOrDefault() {
+    return sort != null ? sort : StoreSort.LATEST;
+  }
+}
