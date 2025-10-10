@@ -48,27 +48,6 @@ public class MenuService {
 
   private final MenuMapper menuMapper;
 
-//  @Transactional(readOnly = true)
-//  public MenuResponse getMenu(Long menuId) {
-//    Menu menu = menuValidator.getMenu(menuId);
-//    List<MenuOptionGroup> menuOptionGroups = menuOptionGroupRepository.findAllByMenuWithGroup(menu);
-//
-//    List<MenuOptionSetResponse> menuOptionSetResponses = new ArrayList<>();
-//
-//    // TODO N+1 발생 지점 -> Group마다 OptionValue를 조회
-//    for (MenuOptionGroup menuOptionGroup : menuOptionGroups) {
-//      List<MenuOptionValue> menuOptionValues = menuOptionValueRepository.findAllByMenuOptionGroup(menuOptionGroup);
-//      List<MenuOptionValueResponse> menuOptionValueResponses = menuOptionValues.stream()
-//          .map(menuMapper::toMenuOptionValueResponse)
-//          .toList();
-//
-//      MenuOptionSetResponse menuOptionSetResponse = menuMapper.toMenuOptionSetResponse(menuOptionGroup.getName(), menuOptionValueResponses);
-//      menuOptionSetResponses.add(menuOptionSetResponse);
-//    }
-//
-//    return menuMapper.toResponse(menu, MenuOptionResponse.from(menuOptionSetResponses));
-//  }
-
   @Transactional(readOnly = true)
   public MenuResponse getMenu(Long menuId) {
     Menu menu = menuValidator.getMenu(menuId);
