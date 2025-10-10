@@ -25,7 +25,9 @@ import com.bappul.delivery.catalog.web.v1.response.menu.internal.OptionPerPrice;
 import com.bappul.delivery.catalog.web.v1.response.menu.internal.PricingInternalResponse;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,23 +48,49 @@ public class MenuService {
 
   private final MenuMapper menuMapper;
 
+//  @Transactional(readOnly = true)
+//  public MenuResponse getMenu(Long menuId) {
+//    Menu menu = menuValidator.getMenu(menuId);
+//    List<MenuOptionGroup> menuOptionGroups = menuOptionGroupRepository.findAllByMenuWithGroup(menu);
+//
+//    List<MenuOptionSetResponse> menuOptionSetResponses = new ArrayList<>();
+//
+//    // TODO N+1 발생 지점 -> Group마다 OptionValue를 조회
+//    for (MenuOptionGroup menuOptionGroup : menuOptionGroups) {
+//      List<MenuOptionValue> menuOptionValues = menuOptionValueRepository.findAllByMenuOptionGroup(menuOptionGroup);
+//      List<MenuOptionValueResponse> menuOptionValueResponses = menuOptionValues.stream()
+//          .map(menuMapper::toMenuOptionValueResponse)
+//          .toList();
+//
+//      MenuOptionSetResponse menuOptionSetResponse = menuMapper.toMenuOptionSetResponse(menuOptionGroup.getName(), menuOptionValueResponses);
+//      menuOptionSetResponses.add(menuOptionSetResponse);
+//    }
+//
+//    return menuMapper.toResponse(menu, MenuOptionResponse.from(menuOptionSetResponses));
+//  }
+
   @Transactional(readOnly = true)
   public MenuResponse getMenu(Long menuId) {
     Menu menu = menuValidator.getMenu(menuId);
-    List<MenuOptionGroup> menuOptionGroups = menuOptionGroupRepository.findByMenu(menu);
 
     List<MenuOptionSetResponse> menuOptionSetResponses = new ArrayList<>();
 
-    // TODO N+1 발생 지점 -> Group마다 OptionValue를 조회
-    for (MenuOptionGroup menuOptionGroup : menuOptionGroups) {
-      List<MenuOptionValue> menuOptionValues = menuOptionValueRepository.findAllByMenuOptionGroup(menuOptionGroup);
-      List<MenuOptionValueResponse> menuOptionValueResponses = menuOptionValues.stream()
+    List<MenuOptionValue> optionValues = menuOptionValueRepository.findAllByMenuWithGroup(menu);
+
+    LinkedHashMap<String, List<MenuOptionValue>> menuOptionMap = optionValues.stream()
+        .collect(Collectors.groupingBy(
+            optionValue -> optionValue.getMenuOptionGroup().getName(),
+            LinkedHashMap::new,
+            Collectors.toList())
+        );
+
+    menuOptionMap.forEach((key, value) -> {
+      List<MenuOptionValueResponse> menuOptionValueResponses = value.stream()
           .map(menuMapper::toMenuOptionValueResponse)
           .toList();
-
-      MenuOptionSetResponse menuOptionSetResponse = menuMapper.toMenuOptionSetResponse(menuOptionGroup.getName(), menuOptionValueResponses);
+      MenuOptionSetResponse menuOptionSetResponse = menuMapper.toMenuOptionSetResponse(key, menuOptionValueResponses);
       menuOptionSetResponses.add(menuOptionSetResponse);
-    }
+    });
 
     return menuMapper.toResponse(menu, MenuOptionResponse.from(menuOptionSetResponses));
   }
