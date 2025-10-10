@@ -49,7 +49,7 @@ public class StoreService {
   }
 
   @Transactional
-  public void toggleStoreOpenStatus(Long storeId, boolean status){
+  public void setStoreOpenStatus(Long storeId, boolean status){
     Store store = storeValidator.getStore(storeId);
     store.updateOpenStatus(status);
   }

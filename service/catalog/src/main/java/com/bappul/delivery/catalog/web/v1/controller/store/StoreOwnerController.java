@@ -44,7 +44,7 @@ public class StoreOwnerController {
       @PathVariable Long storeId,
       @RequestParam("status") boolean status)
   {
-    storeService.toggleStoreOpenStatus(storeId, status);
+    storeService.setStoreOpenStatus(storeId, status);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }
