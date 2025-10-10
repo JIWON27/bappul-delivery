@@ -1,5 +1,6 @@
-package com.bappul.delivery.catalog.web.v1.controller.store;
+package com.bappul.delivery.catalog.web.v1.request.store;
 
+import com.bappul.delivery.catalog.domain.repository.StoreSort;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -4,6 +4,7 @@ import com.bappul.delivery.catalog.application.service.StoreService;
 import com.bappul.delivery.catalog.web.v1.request.store.StoreRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,12 +20,6 @@ import response.ApiResponse;
 @RequestMapping("/api/v1/admin/stores")
 public class StoreAdminController {
 
-  /**
-   * 가게 관리자 API
-   * [POST] 가게 등록
-   * [DELETE] 가게 삭제
-   */
-
   private final StoreService storeService;
 
   @PostMapping
@@ -33,13 +28,13 @@ public class StoreAdminController {
       @AuthenticationPrincipal(expression = "claims['uid']") String userId)
   {
     storeService.enroll(request, Long.valueOf(userId));
-    return ResponseEntity.status(200).body(ApiResponse.success());
+    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success());
   }
 
   @DeleteMapping("/{storeId}")
-  public ResponseEntity<ApiResponse<Void>> deleteById(@PathVariable Long storeId) {
+  public ResponseEntity<Void> deleteById(@PathVariable Long storeId) {
     storeService.deleteById(storeId);
-    return ResponseEntity.status(200).body(ApiResponse.success());
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
 }

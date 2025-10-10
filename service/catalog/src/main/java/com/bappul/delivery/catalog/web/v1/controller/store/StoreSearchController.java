@@ -1,9 +1,12 @@
 package com.bappul.delivery.catalog.web.v1.controller.store;
 
 import com.bappul.delivery.catalog.application.service.SearchService;
+import com.bappul.delivery.catalog.domain.repository.StoreSort;
+import com.bappul.delivery.catalog.web.v1.request.store.StoreSearchCondition;
 import com.bappul.delivery.catalog.web.v1.response.search.StoreSearchResponse;
 import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,12 +19,6 @@ import response.CursorResponse;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/stores")
 public class StoreSearchController {
-
-  /**
-   * 배달 플랫폼 검색
-   * [GET] 가게 검색 API
-   * 정렬 조건 - 최소 주문 가격이 낮은 순, 최신 순, (추가예정)
-   */
 
   private final SearchService searchService;
 
@@ -45,7 +42,7 @@ public class StoreSearchController {
         .size(size)
         .build();
     CursorResponse<StoreSearchResponse> response = searchService.search(condition);
-    return ResponseEntity.status(200).body(ApiResponse.success(response));
+    return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
   }
 
 }

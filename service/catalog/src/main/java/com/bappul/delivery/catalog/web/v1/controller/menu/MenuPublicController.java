@@ -5,6 +5,7 @@ import com.bappul.delivery.catalog.web.v1.request.menu.internal.PricingInternalR
 import com.bappul.delivery.catalog.web.v1.response.menu.MenuResponse;
 import com.bappul.delivery.catalog.web.v1.response.menu.internal.PricingInternalResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,18 +20,12 @@ import response.ApiResponse;
 @RequestMapping("/api/v1/menus")
 public class MenuPublicController {
 
-  /**
-   * 메뉴 공개 API
-   * [GET] 메뉴 상세 조회 API
-   * [POST] 장바구니 아이템 계산 API
-   */
-
   private final MenuService menuService;
 
   @GetMapping("/{menuId}")
   public ResponseEntity<ApiResponse<MenuResponse>> getMenu(@PathVariable Long menuId){
     MenuResponse response = menuService.getMenu(menuId);
-    return ResponseEntity.status(200).body(ApiResponse.success(response));
+    return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
   }
 
   @PostMapping("/price-snapshots")

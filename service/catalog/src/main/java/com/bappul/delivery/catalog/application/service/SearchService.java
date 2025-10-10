@@ -2,7 +2,7 @@ package com.bappul.delivery.catalog.application.service;
 
 import com.bappul.delivery.catalog.domain.repository.StoreSearchViewRepository;
 import com.bappul.delivery.catalog.domain.repository.StoreSearchViewRepository.StoreSearchResult;
-import com.bappul.delivery.catalog.web.v1.controller.store.StoreSearchCondition;
+import com.bappul.delivery.catalog.web.v1.request.store.StoreSearchCondition;
 import com.bappul.delivery.catalog.web.v1.response.search.StoreSearchResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

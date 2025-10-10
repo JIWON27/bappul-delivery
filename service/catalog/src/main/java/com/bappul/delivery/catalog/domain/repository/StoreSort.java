@@ -1,4 +1,4 @@
-package com.bappul.delivery.catalog.web.v1.controller.store;
+package com.bappul.delivery.catalog.domain.repository;
 
 import com.bappul.delivery.catalog.domain.entity.QStoreSearchView;
 import com.querydsl.core.types.OrderSpecifier;

@@ -6,6 +6,7 @@ import com.bappul.delivery.catalog.web.v1.request.menu.MenuRequest;
 import com.bappul.delivery.catalog.web.v1.request.menu.OptionRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -23,12 +24,6 @@ import response.ApiResponse;
 @RequestMapping("/api/v1/owner/stores")
 public class StoreOwnerController {
 
-  /**
-   * 가게 점주 API
-   * [POST] 메뉴 등록
-   * [PATCH] 가게 영업 상태 관리 API
-   */
-
   private final StoreService storeService;
   private final MenuService menuService;
 
@@ -41,15 +36,15 @@ public class StoreOwnerController {
       @AuthenticationPrincipal(expression = "claims['uid']") String userId)
   {
     menuService.enroll(storeId, menuRequest, optionRequest, image, Long.valueOf(userId));
-    return ResponseEntity.status(200).body(ApiResponse.success());
+    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success());
   }
 
   @PatchMapping("/{storeId}")
-  public ResponseEntity<ApiResponse<Void>> toggleStoreOpenStatus(
+  public ResponseEntity<ApiResponse<Void>> setStoreOpenStatus(
       @PathVariable Long storeId,
       @RequestParam("status") boolean status)
   {
     storeService.toggleStoreOpenStatus(storeId, status);
-    return ResponseEntity.status(200).body(ApiResponse.success());
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }
