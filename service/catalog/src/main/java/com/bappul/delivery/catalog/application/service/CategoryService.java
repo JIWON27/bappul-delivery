@@ -21,7 +21,7 @@ public class CategoryService {
 
   @Transactional
   public void create(CategoryRequest request) {
-    Category category = request.toEntity();
+    Category category = categoryMapper.toCategory(request);
     categoryRepository.save(category);
   }
 
