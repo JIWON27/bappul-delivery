@@ -20,6 +20,7 @@ import com.bappul.delivery.catalog.web.v1.response.menu.MenuOptionResponse;
 import com.bappul.delivery.catalog.web.v1.response.menu.MenuOptionSetResponse;
 import com.bappul.delivery.catalog.web.v1.response.menu.MenuOptionValueResponse;
 import com.bappul.delivery.catalog.web.v1.response.menu.MenuResponse;
+import com.bappul.delivery.catalog.web.v1.response.menu.MenuSummaryResponse;
 import com.bappul.delivery.catalog.web.v1.response.menu.internal.CartItemCalculateResponse;
 import com.bappul.delivery.catalog.web.v1.response.menu.internal.OptionPerPrice;
 import com.bappul.delivery.catalog.web.v1.response.menu.internal.PricingInternalResponse;
@@ -75,21 +76,21 @@ public class MenuService {
   }
 
   @Transactional(readOnly = true)
-  public List<MenuResponse> getMenus(Long storeId){
+  public List<MenuSummaryResponse> getMenus(Long storeId){
     Store store = storeValidator.getStore(storeId);
     List<Menu> menus = menuRepository.findAllByStore(store);
-    List<MenuResponse> menuResponses = new ArrayList<>();
-    for (Menu menu : menus) {
-      MenuResponse menuResponse = getMenu(menu.getId());
-      menuResponses.add(menuResponse);
-    }
-    return menuResponses;
+
+    // TODO 메뉴 이미지 기능 구현 시 이미지 경로 따로 넘기도록 수정 필요
+    return menus.stream()
+        .map(menuMapper::toSummaryResponse).toList();
   }
 
   @Transactional
   public void enroll(Long storeId, MenuRequest request, OptionRequest optionRequest, MultipartFile image, Long userId) {
 
     Store store = storeValidator.getStore(storeId, userId);
+
+    // TODO 메뉴 이미지 기능 구현 시 수정해야할 부분
     String photoUrl = menuImageService.saveImage(image);
 
     Menu menu = menuMapper.toMenu(store, request, photoUrl);

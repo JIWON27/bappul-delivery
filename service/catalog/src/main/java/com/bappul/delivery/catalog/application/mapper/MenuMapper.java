@@ -8,6 +8,7 @@ import com.bappul.delivery.catalog.web.v1.response.menu.MenuOptionResponse;
 import com.bappul.delivery.catalog.web.v1.response.menu.MenuOptionSetResponse;
 import com.bappul.delivery.catalog.web.v1.response.menu.MenuOptionValueResponse;
 import com.bappul.delivery.catalog.web.v1.response.menu.MenuResponse;
+import com.bappul.delivery.catalog.web.v1.response.menu.MenuSummaryResponse;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -21,6 +22,7 @@ public interface MenuMapper {
   Menu toMenu(Store store, MenuRequest request, String photoUrl);
 
   MenuResponse toResponse(Menu menu, MenuOptionResponse  menuOption);
+  MenuSummaryResponse toSummaryResponse(Menu menu);
   MenuOptionValueResponse toMenuOptionValueResponse(MenuOptionValue menuOptionValue);
   MenuOptionSetResponse toMenuOptionSetResponse(String optionGroupName, List<MenuOptionValueResponse> optionValues);
 

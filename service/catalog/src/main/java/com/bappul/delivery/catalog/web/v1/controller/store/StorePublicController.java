@@ -1,7 +1,7 @@
 package com.bappul.delivery.catalog.web.v1.controller.store;
 
 import com.bappul.delivery.catalog.application.service.MenuService;
-import com.bappul.delivery.catalog.web.v1.response.menu.MenuResponse;
+import com.bappul.delivery.catalog.web.v1.response.menu.MenuSummaryResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,8 +20,8 @@ public class StorePublicController {
   private final MenuService menuService;
 
   @GetMapping("/{storeId}")
-  public ResponseEntity<ApiResponse<List<MenuResponse>>> getMenus(@PathVariable Long storeId) {
-    List<MenuResponse> responses = menuService.getMenus(storeId);
+  public ResponseEntity<ApiResponse<List<MenuSummaryResponse>>> getMenus(@PathVariable Long storeId) {
+    List<MenuSummaryResponse> responses = menuService.getMenus(storeId);
     return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responses));
   }
 }
