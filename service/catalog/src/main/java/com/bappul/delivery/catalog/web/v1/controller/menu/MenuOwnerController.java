@@ -31,7 +31,7 @@ public class MenuOwnerController {
       @RequestParam("soldOut") boolean soldOut,
       @AuthenticationPrincipal(expression = "claims['uid']") String ownerId)
   {
-    menuService.toggleMenuSoldOut(menuId, soldOut, Long.valueOf(ownerId));
+    menuService.setMenuSoldOut(menuId, soldOut, Long.valueOf(ownerId));
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
@@ -41,7 +41,7 @@ public class MenuOwnerController {
       @RequestParam("soldOut") boolean soldOut,
       @AuthenticationPrincipal(expression = "claims['uid']") String ownerId)
   {
-    menuService.toggleOptionStatus(menuOptionValueId, soldOut, Long.valueOf(ownerId));
+    menuService.setMenuOptionSoldOut(menuOptionValueId, soldOut, Long.valueOf(ownerId));
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

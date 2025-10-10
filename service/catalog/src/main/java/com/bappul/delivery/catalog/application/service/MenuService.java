@@ -112,7 +112,7 @@ public class MenuService {
   }
 
   @Transactional
-  public void toggleMenuSoldOut(Long menuId, boolean soldOut, Long ownerId) {
+  public void setMenuSoldOut(Long menuId, boolean soldOut, Long ownerId) {
     Menu menu = menuValidator.getMenu(menuId);
     Store store = menu.getStore();
     storeValidator.validateStoreOwner(store, ownerId);
@@ -123,7 +123,7 @@ public class MenuService {
   }
 
   @Transactional
-  public void toggleOptionStatus(Long menuOptionValueId, boolean soldOut, Long ownerId) {
+  public void setMenuOptionSoldOut(Long menuOptionValueId, boolean soldOut, Long ownerId) {
     MenuOptionValue menuOptionValue = menuValidator.getMenuOptionValue(menuOptionValueId);
     MenuOptionGroup menuOptionGroup = menuOptionValue.getMenuOptionGroup();
     Menu menu = menuOptionGroup.getMenu();
