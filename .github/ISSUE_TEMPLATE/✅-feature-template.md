@@ -2,7 +2,7 @@
 name: "✅ Feature Template"
 about: 기능 이슈 템플릿
 title: "[Feature]"
-labels: feature
+labels: feature, refactor
 assignees: JIWON27
 
 ---
