@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum Role {
   USER("회원"),
   OWNER("점수"),
+  RIDER("라이더"),
   ADMIN("관리자");
 
   private final String description;

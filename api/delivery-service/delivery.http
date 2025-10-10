@@ -1,0 +1,57 @@
+### 라이더 로그인
+POST http://localhost:8000/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "rider1@example.com",
+  "password": "securePass123"
+}
+
+> {%
+  client.global.set("token", "Bearer " + response.body.accessToken);
+%}
+
+### 라이더1 상태 변경
+PUT http://localhost:8000/api/v1/deliveries
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "status" : "AVAILABLE",
+  "latitude": 37.5005,
+  "longitude": 127.0302
+}
+
+### 라이더2 상태 변경
+PUT http://localhost:8000/api/v1/deliveries
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "status" : "AVAILABLE",
+  "latitude": 37.5020,
+  "longitude": 127.0285
+}
+
+### 라이더3 상태 변경
+PUT http://localhost:8000/api/v1/deliveries
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "status" : "AVAILABLE",
+  "latitude": 37.4965,
+  "longitude": 127.0320
+}
+
+### 라이더 배달 수락
+POST http://localhost:8000/api/v1/deliveries/1/accept
+Authorization: {{token}}
+
+### 라이더 배달 픽업
+POST http://localhost:8000/api/v1/deliveries/1/pickup
+Authorization: {{token}}
+
+### 라이더 배달 완료
+POST http://localhost:8000/api/v1/deliveries/1/complete
+Authorization: {{token}}

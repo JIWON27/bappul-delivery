@@ -2,8 +2,6 @@ package com.bappul.delivery.pomotion.application.event.consumer;
 
 import static com.bappul.delivery.pomotion.exception.ServiceExceptionCode.JSON_DESERIALIZATION_ERROR;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bappul.delivery.pomotion.application.event.contracts.coupon.CouponEventPayload;
 import com.bappul.delivery.pomotion.application.service.ExpirationCalculator;
 import com.bappul.delivery.pomotion.application.validator.CouponValidator;
@@ -12,8 +10,11 @@ import com.bappul.delivery.pomotion.domain.entity.CouponPolicy;
 import com.bappul.delivery.pomotion.domain.entity.CouponStatus;
 import com.bappul.delivery.pomotion.domain.entity.CouponType;
 import com.bappul.delivery.pomotion.domain.repository.CouponRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import exception.ServiceException;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,15 +32,18 @@ public class CouponProcessor {
   public void processCouponUsed(String payload) {
     try {
       CouponEventPayload couponUsedRequest = objectMapper.readValue(payload, CouponEventPayload.class);
-      Coupon coupon = couponValidator.getCoupon(couponUsedRequest.getCouponId());
-      CouponPolicy couponPolicy = coupon.getCouponPolicy();
 
-      if (coupon.getStatus() == CouponStatus.USED) {
-        return;
+      if (!Objects.isNull(couponUsedRequest.getCouponId())) {
+        Coupon coupon = couponValidator.getCoupon(couponUsedRequest.getCouponId());
+        CouponPolicy couponPolicy = coupon.getCouponPolicy();
+
+        if (coupon.getStatus() == CouponStatus.USED) {
+          return;
+        }
+
+        coupon.markAsUsed();
+        couponPolicy.incrementRedeemedQuantity();
       }
-
-      coupon.markAsUsed();
-      couponPolicy.incrementRedeemedQuantity();
     } catch (JsonProcessingException e) {
       throw new ServiceException(JSON_DESERIALIZATION_ERROR);
     }
