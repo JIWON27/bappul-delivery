@@ -80,12 +80,12 @@ public class MenuService {
   }
 
   @Transactional
-  public void enroll(Long storeId, MenuRequest menuRequest, OptionRequest optionRequest, MultipartFile image, Long userId) {
+  public void enroll(Long storeId, MenuRequest request, OptionRequest optionRequest, MultipartFile image, Long userId) {
 
     Store store = storeValidator.getStore(storeId, userId);
-    String imageUrl = menuImageService.saveImage(image);
+    String photoUrl = menuImageService.saveImage(image);
 
-    Menu menu = menuRequest.toEntity(store, imageUrl);
+    Menu menu = menuMapper.toMenu(store, request, photoUrl);
     Menu savedMenu = menuRepository.save(menu);
 
     for (OptionItemRequest optionItemRequest : optionRequest.getOptionItemRequests()) {
