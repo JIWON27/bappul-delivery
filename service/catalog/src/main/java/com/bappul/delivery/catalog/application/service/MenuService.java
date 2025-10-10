@@ -1,6 +1,7 @@
 package com.bappul.delivery.catalog.application.service;
 
 import com.bappul.delivery.catalog.application.mapper.MenuMapper;
+import com.bappul.delivery.catalog.application.mapper.PricingMapper;
 import com.bappul.delivery.catalog.application.validator.MenuValidator;
 import com.bappul.delivery.catalog.application.validator.StoreValidator;
 import com.bappul.delivery.catalog.domain.entity.Menu;
@@ -48,6 +49,7 @@ public class MenuService {
   private final MenuValidator menuValidator;
 
   private final MenuMapper menuMapper;
+  private final PricingMapper pricingMapper;
 
   @Transactional(readOnly = true)
   public MenuResponse getMenu(Long menuId) {
@@ -181,26 +183,20 @@ public class MenuService {
       BigDecimal unitPrice = basePrice.add(optionUnitPrice);
       BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(cartItemRequest.getQuantity()));
 
-      CartItemCalculateResponse cartItemCalculateResponse = CartItemCalculateResponse.builder()
-          .menuId(menuId)
-          .menuName(menu.getName())
-          .basePrice(basePrice)
-          .optionPerPrices(optionPerPrices)
-          .optionUnitPrice(optionUnitPrice)
-          .unitPrice(unitPrice)
-          .quantity(cartItemRequest.getQuantity())
-          .lineTotal(lineTotal)
-          .build();
+      CartItemCalculateResponse cartItemCalculateResponse = pricingMapper.toCartItemCalculateResponse(
+          menu,
+          basePrice,
+          optionPerPrices,
+          optionUnitPrice,
+          unitPrice,
+          cartItemRequest.getQuantity(),
+          lineTotal
+      );
       cartItemCalculateResponses.add(cartItemCalculateResponse);
 
       totalPrice = totalPrice.add(lineTotal);
     }
 
-    return PricingInternalResponse.builder()
-        .storeId(storeId)
-        .storeName(store.getName())
-        .items(cartItemCalculateResponses)
-        .totalPrice(totalPrice)
-        .build();
+    return pricingMapper.toPricingInternalResponse(store, cartItemCalculateResponses, totalPrice);
   }
 }
