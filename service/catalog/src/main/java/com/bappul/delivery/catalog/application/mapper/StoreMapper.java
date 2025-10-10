@@ -12,7 +12,9 @@ public interface StoreMapper {
 
   @Mapping(target = "name", source = "request.name")
   @Mapping(target = "category", source = "category")
-  Store toStore(StoreRequest request, Category category, Long userId);
+  @Mapping(target = "userId", source = "request.ownerId")
+  Store toStore(StoreRequest request, Category category);
+
   @Mapping(target = "category", source = "store.category.name")
   StoreResponse toResponse(Store store);
 

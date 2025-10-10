@@ -6,7 +6,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,11 +22,8 @@ public class StoreAdminController {
   private final StoreService storeService;
 
   @PostMapping
-  public ResponseEntity<ApiResponse<Void>> enroll(
-      @Valid @RequestBody StoreRequest request,
-      @AuthenticationPrincipal(expression = "claims['uid']") String userId)
-  {
-    storeService.enroll(request, Long.valueOf(userId));
+  public ResponseEntity<ApiResponse<Void>> enroll(@Valid @RequestBody StoreRequest request) {
+    storeService.enroll(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success());
   }
 

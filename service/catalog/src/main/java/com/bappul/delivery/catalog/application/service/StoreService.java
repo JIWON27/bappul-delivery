@@ -36,9 +36,9 @@ public class StoreService {
   private final StoreMapper storeMapper;
 
   @Transactional
-  public void enroll(StoreRequest request, Long userId){
+  public void enroll(StoreRequest request){
     Category category = categoryValidator.getCategoryById(request.getCategoryId());
-    Store store = storeMapper.toStore(request, category, userId);
+    Store store = storeMapper.toStore(request, category);
     storeRepository.save(store);
   }
 

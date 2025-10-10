@@ -11,10 +11,12 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class StoreRequest {
   Long categoryId;
+  Long ownerId;
   String name;
   String phoneNumber;
   String address;
   String introduction;
   BigDecimal minOrderPrice;
   BigDecimal deliveryFee;
+  Boolean openStatus;
 }

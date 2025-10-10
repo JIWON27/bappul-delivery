@@ -65,7 +65,7 @@ public class Store {
   BigDecimal deliveryFee;
 
   @Column(name = "open_status", nullable = false)
-  Boolean openStatus = false;
+  Boolean openStatus;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
