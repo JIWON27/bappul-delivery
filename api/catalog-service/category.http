@@ -1,5 +1,5 @@
 ### 로그인
-POST http://localhost:8000/user/api/v1/login
+POST http://localhost:8000/api/v1/login
 Content-Type: application/json
 
 {
@@ -12,14 +12,18 @@ Content-Type: application/json
 %}
 
 ### 카테고리 등록
-POST http://localhost:8000/catalog/api/v1/admin/category
+POST http://localhost:8000/api/v1/admin/category
 Authorization: {{token}}
 Content-Type: application/json
 
 {
-  "name": "찜/탕"
+  "name": "기타"
 }
 
 ### 카테고리 조회
-GET http://localhost:8000/catalog/api/v1/admin/category
+GET http://localhost:8000/api/v1/admin/category
+Authorization: {{token}}
+
+### 카테고리 삭제
+DELETE http://localhost:8000/api/v1/admin/category/12
 Authorization: {{token}}
