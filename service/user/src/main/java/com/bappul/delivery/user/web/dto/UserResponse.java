@@ -14,4 +14,5 @@ public class UserResponse {
   UUID uuid;
   String email;
   String nickname;
+  String imageUrl;
 }
