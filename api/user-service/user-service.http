@@ -45,6 +45,9 @@ Authorization: {{token}}
 GET http://localhost:8000/api/v1/users/uuid/b230e86d-50f5-455b-9742-28b81460e55e
 Authorization: {{token}}
 
+### 프로필 다운로드 API
+GET http://localhost:8000/api/v1/users/1/profile/download
+
 ### 로그인
 POST http://localhost:8000/api/v1/login
 Content-Type: application/json
@@ -55,8 +58,20 @@ Content-Type: application/json
 }
 
 > {%
-  client.global.set("token", "Bearer " + response.body.access_token);
+  client.global.set("token", "Bearer " + response.body.accessToken);
 %}
+
+### 프로필 수정 API
+POST http://localhost:8000/api/v1/users/profile
+Authorization: {{token}}
+Content-Type: multipart/form-data; boundary=BOUNDARY123
+
+--BOUNDARY123
+Content-Disposition: form-data; name="profile"; filename="chicken.jpg"
+Content-Type: image/jpeg
+
+< /Users/minjiwon/Desktop/bappul/api/catalog-service/chicken.jpeg
+--BOUNDARY123--
 
 ### 회원 주소 등록
 POST http://localhost:8000/api/v1/address
