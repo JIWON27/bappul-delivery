@@ -1,6 +1,6 @@
 package com.bappul.catalog.domain.repository;
 
-import com.bappul.delivery.catalog.domain.entity.QStoreSearchView;
+import com.bappul.catalog.domain.entity.QStoreSearchView;
 import com.querydsl.core.types.OrderSpecifier;
 import lombok.Getter;
 

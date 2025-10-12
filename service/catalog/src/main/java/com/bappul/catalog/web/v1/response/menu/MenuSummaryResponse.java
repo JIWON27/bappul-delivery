@@ -14,5 +14,5 @@ public class MenuSummaryResponse {
   String name;
   String description;
   BigDecimal price;
-  String photoUrl;
+  String imageUrl;
 }

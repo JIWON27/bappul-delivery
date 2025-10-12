@@ -1,12 +1,12 @@
 package com.bappul.catalog.domain.repository;
 
-import static com.bappul.delivery.catalog.domain.entity.QStoreSearchView.storeSearchView;
+import static com.bappul.catalog.domain.entity.QStoreSearchView.storeSearchView;
 
 import com.bappul.catalog.application.service.CursorCodec;
 import com.bappul.catalog.application.service.CursorCodec.Cursor;
+import com.bappul.catalog.domain.entity.QStoreSearchView;
 import com.bappul.catalog.domain.entity.Store;
 import com.bappul.catalog.web.v1.request.store.StoreSearchCondition;
-import com.bappul.delivery.catalog.domain.entity.QStoreSearchView;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;

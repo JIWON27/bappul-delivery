@@ -13,7 +13,6 @@ import com.bappul.catalog.domain.repository.MenuOptionValueRepository;
 import com.bappul.catalog.domain.repository.MenuRepository;
 import com.bappul.catalog.web.v1.request.menu.MenuRequest;
 import com.bappul.catalog.web.v1.request.menu.OptionItemRequest;
-import com.bappul.catalog.web.v1.request.menu.OptionRequest;
 import com.bappul.catalog.web.v1.request.menu.OptionValueRequest;
 import com.bappul.catalog.web.v1.request.menu.internal.CartItemRequest;
 import com.bappul.catalog.web.v1.request.menu.internal.PricingInternalRequest;
@@ -33,7 +32,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -74,7 +72,10 @@ public class MenuService {
       menuOptionSetResponses.add(menuOptionSetResponse);
     });
 
-    return menuMapper.toResponse(menu, MenuOptionResponse.from(menuOptionSetResponses));
+    List<String> imageUrls = menuImageService.getMenuImageUrls(menu);
+    String thumbnail = menuImageService.getThumbnailUrl(menu.getId());
+
+    return menuMapper.toResponse(menu, MenuOptionResponse.from(menuOptionSetResponses), thumbnail, imageUrls);
   }
 
   @Transactional(readOnly = true)
@@ -82,23 +83,22 @@ public class MenuService {
     Store store = storeValidator.getStore(storeId);
     List<Menu> menus = menuRepository.findAllByStore(store);
 
-    // TODO 메뉴 이미지 기능 구현 시 이미지 경로 따로 넘기도록 수정 필요
     return menus.stream()
-        .map(menuMapper::toSummaryResponse).toList();
+        .map(menu -> menuMapper.toSummaryResponse(
+            menu,
+            menuImageService.getThumbnailUrl(menu.getId())))
+        .toList();
   }
 
   @Transactional
-  public void enroll(Long storeId, MenuRequest request, OptionRequest optionRequest, MultipartFile image, Long userId) {
+  public void enroll(Long storeId, MenuRequest request, Long userId) {
 
     Store store = storeValidator.getStore(storeId, userId);
 
-    // TODO 메뉴 이미지 기능 구현 시 수정해야할 부분
-    String photoUrl = menuImageService.saveImage(image);
-
-    Menu menu = menuMapper.toMenu(store, request, photoUrl);
+    Menu menu = menuMapper.toMenu(store, request);
     menuRepository.save(menu);
 
-    for (OptionItemRequest optionItemRequest : optionRequest.getOptionItemRequests()) {
+    for (OptionItemRequest optionItemRequest : request.getOptionRequest().getOptionItemRequests()) {
       MenuOptionGroup menuOptionGroup = menuMapper.toMenuOptionGroup(optionItemRequest, menu);
       menuOptionGroupRepository.save(menuOptionGroup);
 

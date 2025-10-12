@@ -17,6 +17,8 @@ public enum ServiceExceptionCode implements ServiceErrorCode {
   NOT_FOUND_MENU_OPTION_VALUE("존재하지 않는 메뉴 옵션 값입니다.", 404),
   NOT_FOUND_CATEGORY("존재하지 않는 카테고리입니다.", 404),
 
+  NOT_FOUND_IMAGE("존재하지 않는 이미지입니다.", 404),
+
   MENU_NOT_IN_STORE("요청한 메뉴는 해당 가게의 메뉴가 아닙니다.", 400),
   OPTION_NOT_IN_MENU("요청한 옵션은 해당 가게의 메뉴 옵션이 아닙니다.", 400),
 

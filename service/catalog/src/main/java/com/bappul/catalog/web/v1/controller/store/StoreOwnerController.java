@@ -1,20 +1,21 @@
 package com.bappul.catalog.web.v1.controller.store;
 
 import com.bappul.catalog.application.service.MenuService;
+import com.bappul.catalog.application.service.StoreImageService;
 import com.bappul.catalog.application.service.StoreService;
 import com.bappul.catalog.web.v1.request.menu.MenuRequest;
-import com.bappul.catalog.web.v1.request.menu.OptionRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import response.ApiResponse;
@@ -26,16 +27,15 @@ public class StoreOwnerController {
 
   private final StoreService storeService;
   private final MenuService menuService;
+  private final StoreImageService storeImageService;
 
   @PostMapping("/{storeId}/menus")
   public ResponseEntity<ApiResponse<Void>>  enroll(
       @PathVariable Long storeId,
-      @Valid @RequestPart("menu") MenuRequest menuRequest,
-      @Valid @RequestPart("option") OptionRequest optionRequest,
-      @RequestPart("image") MultipartFile image,
+      @Valid @RequestBody MenuRequest menuRequest,
       @AuthenticationPrincipal(expression = "claims['uid']") String userId)
   {
-    menuService.enroll(storeId, menuRequest, optionRequest, image, Long.valueOf(userId));
+    menuService.enroll(storeId, menuRequest, Long.valueOf(userId));
     return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success());
   }
 
@@ -46,5 +46,14 @@ public class StoreOwnerController {
   {
     storeService.setStoreOpenStatus(storeId, status);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
+
+  @PostMapping(value = "/{storeId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<Void> updateThumbnailImage(
+      @PathVariable Long storeId,
+      @RequestParam("image") MultipartFile file)
+  {
+    storeImageService.uploadStoreImage(file, storeId);
+    return  ResponseEntity.status(HttpStatus.OK).build();
   }
 }

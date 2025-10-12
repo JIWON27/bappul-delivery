@@ -18,14 +18,16 @@ public class StoreSearchResponse {
   String categoryName;
   BigDecimal minOrderPrice;
   BigDecimal deliveryFee;
+  String imageUrl;
 
-  public static StoreSearchResponse from(Store store){
+  public static StoreSearchResponse from(Store store, String imageUrl){
     return StoreSearchResponse.builder()
         .storeId(store.getId())
         .storeName(store.getName())
         .categoryName(store.getCategory().getName())
         .minOrderPrice(store.getMinOrderPrice())
         .deliveryFee(store.getDeliveryFee())
+        .imageUrl(imageUrl)
         .build();
   }
 }

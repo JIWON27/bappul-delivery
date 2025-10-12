@@ -14,68 +14,76 @@ Content-Type: application/json
 ### 메뉴 등록
 POST http://localhost:8000/api/v1/owner/stores/1/menus
 Authorization: {{token}}
-Content-Type: multipart/form-data; boundary=boundary
-
---boundary
-Content-Disposition: form-data; name="menu"
 Content-Type: application/json
 
 {
   "name": "치킨",
   "price": 10000,
-  "description": "치킨"
-}
---boundary
-Content-Disposition: form-data; name="option"
-Content-Type: application/json
-
-{
-  "optionItemRequests": [
-    {
-      "groupName": "소스 추가",
-      "optionValues": [
-        { "name": "머스터드",   "additionalPrice": 0, "soldOut" : false },
-        { "name": "갈릭디핑",   "additionalPrice": 500, "soldOut" : false },
-        { "name": "스위트칠리", "additionalPrice": 500, "soldOut" : false },
-        { "name": "치즈소스",   "additionalPrice": 1000, "soldOut" : false }
-      ]
-    },
-    {
-      "groupName": "매운맛 선택",
-      "optionValues": [
-        { "name": "순한맛",   "additionalPrice": 0, "soldOut" : false },
-        { "name": "착한맛",   "additionalPrice": 0, "soldOut" : false },
-        { "name": "보통맛",   "additionalPrice": 0, "soldOut" : false },
-        { "name": "매운맛", "additionalPrice": 0, "soldOut" : false }
-      ]
-    },
-    {
-      "groupName": "사이드 메뉴 추가",
-      "optionValues": [
-        { "name": "감자튀김",    "additionalPrice": 3000, "soldOut" : false },
-        { "name": "치즈볼(4ea)", "additionalPrice": 3500, "soldOut" : false }
-      ]
-    },
-    {
-      "groupName": "음료 추가",
-      "optionValues": [
-        { "name": "코카콜라 500ml",  "additionalPrice": 2000, "soldOut" : false },
-        { "name": "코카콜라 1.25L", "additionalPrice": 3000, "soldOut" : false },
-        { "name": "스프라이트 500ml", "additionalPrice": 2000, "soldOut" : false },
-        { "name": "제로콜라 500ml", "additionalPrice": 2000, "soldOut" : false },
-        { "name": "환타 오렌지 500ml", "additionalPrice": 2000, "soldOut" : false }
+  "description": "치킨",
+  "optionRequest" : {
+      "optionItemRequests": [
+        {
+          "groupName": "소스 추가",
+          "optionValues": [
+            { "name": "머스터드",   "additionalPrice": 0, "soldOut" : false },
+            { "name": "갈릭디핑",   "additionalPrice": 500, "soldOut" : false },
+            { "name": "스위트칠리", "additionalPrice": 500, "soldOut" : false },
+            { "name": "치즈소스",   "additionalPrice": 1000, "soldOut" : false }
+          ]
+        },
+        {
+          "groupName": "매운맛 선택",
+          "optionValues": [
+            { "name": "순한맛",   "additionalPrice": 0, "soldOut" : false },
+            { "name": "착한맛",   "additionalPrice": 0, "soldOut" : false },
+            { "name": "보통맛",   "additionalPrice": 0, "soldOut" : false },
+            { "name": "매운맛", "additionalPrice": 0, "soldOut" : false }
+          ]
+        },
+        {
+          "groupName": "사이드 메뉴 추가",
+          "optionValues": [
+            { "name": "감자튀김",    "additionalPrice": 3000, "soldOut" : false },
+            { "name": "치즈볼(4ea)", "additionalPrice": 3500, "soldOut" : false }
+          ]
+        },
+        {
+          "groupName": "음료 추가",
+          "optionValues": [
+            { "name": "코카콜라 500ml",  "additionalPrice": 2000, "soldOut" : false },
+            { "name": "코카콜라 1.25L", "additionalPrice": 3000, "soldOut" : false },
+            { "name": "스프라이트 500ml", "additionalPrice": 2000, "soldOut" : false },
+            { "name": "제로콜라 500ml", "additionalPrice": 2000, "soldOut" : false },
+            { "name": "환타 오렌지 500ml", "additionalPrice": 2000, "soldOut" : false }
+          ]
+        }
       ]
     }
-  ]
-}
+ }
 
---boundary
-Content-Disposition: form-data; name="image"; filename="chicken.jpg"
+### 메뉴 썸네일 이미지 등록 API
+POST http://localhost:8000/api/v1/owner/menus/1/thumbnail
+Authorization: {{token}}
+Content-Type: multipart/form-data; boundary=BOUNDARY123
+
+--BOUNDARY123
+Content-Disposition: form-data; name="thumbnail"; filename="chicken.jpg"
 Content-Type: image/jpeg
 
 < /Users/minjiwon/Desktop/bappul/api/catalog-service/chicken.jpeg
---boundary--
+--BOUNDARY123--
 
+### 메뉴 이미지 등록 API
+POST http://localhost:8000/api/v1/owner/menus/1/images
+Authorization: {{token}}
+Content-Type: multipart/form-data; boundary=BOUNDARY123
+
+--BOUNDARY123
+Content-Disposition: form-data; name="images"; filename="chicken.jpg"
+Content-Type: image/jpeg
+
+< /Users/minjiwon/Desktop/bappul/api/catalog-service/chicken.jpeg
+--BOUNDARY123--
 
 ### 회원 로그인
 POST http://localhost:8000/api/v1/login

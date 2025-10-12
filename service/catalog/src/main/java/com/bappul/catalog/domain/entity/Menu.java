@@ -41,9 +41,6 @@ public class Menu {
   @Column(name = "name",  nullable = false, length = 50)
   String name;
 
-  @Column(name = "photo_url", nullable = false, length = 500)
-  String photoUrl;
-
   @Column(name = "price",  nullable = false, precision = 10, scale = 0)
   BigDecimal price;
 
@@ -68,11 +65,10 @@ public class Menu {
   LocalDateTime updatedAt;
 
   @Builder
-  public Menu(Store store, String name, String photoUrl, BigDecimal price, String description,
+  public Menu(Store store, String name, BigDecimal price, String description,
       Integer sortOrder) {
     this.store = store;
     this.name = name;
-    this.photoUrl = photoUrl;
     this.price = price;
     this.description = description;
     this.sortOrder = sortOrder;

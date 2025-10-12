@@ -11,4 +11,5 @@ public class MenuRequest {
   String name;
   BigDecimal price;
   String description;
+  OptionRequest optionRequest;
 }

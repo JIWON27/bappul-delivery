@@ -21,9 +21,8 @@ public interface MenuMapper {
   // TODO sortOrder 처리 로직 추가 현재는 임시값.
 
   @Mapping(target = "sortOrder", expression = "java(0)")
-  @Mapping(target = "photoUrl", source = "photoUrl")
   @Mapping(target = "name", source = "request.name")
-  Menu toMenu(Store store, MenuRequest request, String photoUrl);
+  Menu toMenu(Store store, MenuRequest request);
 
   @Mapping(target = "sortOrder", expression = "java(0)")
   @Mapping(target = "name", source = "request.groupName")
@@ -32,8 +31,8 @@ public interface MenuMapper {
   @Mapping(target = "name", source = "request.name")
   MenuOptionValue toMenuOptionValue(OptionValueRequest request, MenuOptionGroup menuOptionGroup);
 
-  MenuResponse toResponse(Menu menu, MenuOptionResponse  menuOption);
-  MenuSummaryResponse toSummaryResponse(Menu menu);
+  MenuResponse toResponse(Menu menu, MenuOptionResponse menuOption, String thumbnail, List<String> imageUrls);
+  MenuSummaryResponse toSummaryResponse(Menu menu, String imageUrl);
   MenuOptionValueResponse toMenuOptionValueResponse(MenuOptionValue menuOptionValue);
   MenuOptionSetResponse toMenuOptionSetResponse(String optionGroupName, List<MenuOptionValueResponse> optionValues);
 
