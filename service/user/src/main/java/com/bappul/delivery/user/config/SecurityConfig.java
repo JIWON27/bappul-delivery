@@ -2,9 +2,9 @@ package com.bappul.delivery.user.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bappul.delivery.user.common.jwt.filter.AuthenticationFilter;
 import com.bappul.delivery.user.common.jwt.filter.TokenProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,6 +48,7 @@ public class SecurityConfig {
             .requestMatchers(SECURITY_EXCLUDE_PATHS).permitAll()
             .requestMatchers("/api/v1/login").permitAll()
             .requestMatchers("/api/v1/users").permitAll()
+            .requestMatchers("/api/v1/users/*/profile/download").permitAll()
             .anyRequest().authenticated()
         )
         .oauth2ResourceServer(oauth ->

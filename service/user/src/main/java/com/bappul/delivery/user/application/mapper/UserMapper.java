@@ -9,6 +9,6 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-  UserResponse toResponse(User user);
+  UserResponse toResponse(User user, String imageUrl);
   User toEntity(UserRequest userRequest, UUID uuid);
 }

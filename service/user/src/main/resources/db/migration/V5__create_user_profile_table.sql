@@ -1,0 +1,12 @@
+-- 프로필
+CREATE TABLE profile (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    original_name VARCHAR(50) NOT NULL,
+    saved_name VARCHAR(50) NOT NULL,
+    storage_key VARCHAR(50) NOT NULL,
+    content_type VARCHAR(50) NOT NULL,
+    size BIGINT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
