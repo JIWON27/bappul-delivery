@@ -54,6 +54,9 @@ public class MenuImage {
   @Column(name = "size", nullable = false)
   Long size;
 
+  @Column(name = "thumbnail", nullable = false)
+  Boolean thumbnail;
+
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   LocalDateTime createdAt;
@@ -63,13 +66,14 @@ public class MenuImage {
 
   @Builder
   public MenuImage(Menu menu, String originalName, String savedName, String storageKey,
-      String contentType, Long size) {
+      String contentType, Long size, Boolean thumbnail) {
     this.menu = menu;
     this.originalName = originalName;
     this.savedName = savedName;
     this.storageKey = storageKey;
     this.contentType = contentType;
     this.size = size;
+    this.thumbnail = thumbnail;
   }
 
   public void updateOriginalName(String originalName) {

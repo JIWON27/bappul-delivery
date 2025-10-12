@@ -1,0 +1,2 @@
+ALTER TABLE menu_image
+ADD COLUMN thumbnail BOOLEAN NOT NULL DEFAULT 0;
