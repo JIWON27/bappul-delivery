@@ -34,3 +34,15 @@ Content-Type: application/json
   "deliveryFee" : 4000,
   "openStatus" : false
 }
+
+### 가게 대표 이미지 등록 API
+POST http://localhost:8000/api/v1/owner/stores/1/image
+Authorization: {{token}}
+Content-Type: multipart/form-data; boundary=BOUNDARY123
+
+--BOUNDARY123
+Content-Disposition: form-data; name="image"; filename="chicken.jpg"
+Content-Type: image/jpeg
+
+< /Users/minjiwon/Desktop/bappul/api/catalog-service/chicken.jpeg
+--BOUNDARY123--
