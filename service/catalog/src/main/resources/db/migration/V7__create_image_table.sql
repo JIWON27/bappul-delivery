@@ -1,0 +1,25 @@
+-- 가게 이미지
+CREATE TABLE store_image (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    store_id BIGINT NOT NULL,
+    original_name VARCHAR(50) NOT NULL,
+    saved_name VARCHAR(50) NOT NULL,
+    storage_key VARCHAR(50) NOT NULL,
+    content_type VARCHAR(50) NOT NULL,
+    size BIGINT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 메뉴 이미지
+CREATE TABLE menu_image (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    menu_id BIGINT NOT NULL,
+    original_name VARCHAR(50) NOT NULL,
+    saved_name VARCHAR(50) NOT NULL,
+    storage_key VARCHAR(50) NOT NULL,
+    content_type VARCHAR(50) NOT NULL,
+    size BIGINT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
