@@ -1,6 +1,7 @@
 package com.bappul.catalog.web.v1.response.menu;
 
 import java.math.BigDecimal;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +15,7 @@ public class MenuResponse {
   String name;
   String description;
   BigDecimal price;
-  String photoUrl;
+  String thumbnail;
+  List<String> imageUrls;
   MenuOptionResponse menuOption;
 }
