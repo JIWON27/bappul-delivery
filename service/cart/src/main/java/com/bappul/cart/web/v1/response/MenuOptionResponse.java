@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MenuOptionSummary {
+public class MenuOptionResponse {
   Long optionItemId;
   String optionName;
   BigDecimal optionAdditionalPrice;
