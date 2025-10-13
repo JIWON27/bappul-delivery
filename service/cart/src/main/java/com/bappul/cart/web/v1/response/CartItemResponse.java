@@ -16,7 +16,7 @@ public class CartItemResponse {
   Long cartItemId;
   Long menuId;
   String menuName;
-  List<MenuOptionSummary> options;
+  List<MenuOptionResponse> options;
   BigDecimal basePrice;
   int quantity;
   BigDecimal lineTotal;

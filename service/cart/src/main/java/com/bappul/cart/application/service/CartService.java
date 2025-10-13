@@ -1,5 +1,6 @@
 package com.bappul.cart.application.service;
 
+import com.bappul.cart.application.mapper.CartMapper;
 import com.bappul.cart.application.validator.CartValidator;
 import com.bappul.cart.client.CatalogClient;
 import com.bappul.cart.client.request.PricingInternalRequest;
@@ -16,7 +17,7 @@ import com.bappul.cart.domain.repository.CartRepository;
 import com.bappul.cart.web.v1.request.CartRequest;
 import com.bappul.cart.web.v1.response.CartItemResponse;
 import com.bappul.cart.web.v1.response.CartResponse;
-import com.bappul.cart.web.v1.response.MenuOptionSummary;
+import com.bappul.cart.web.v1.response.MenuOptionResponse;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,59 +34,36 @@ public class CartService {
   private final CartRepository cartRepository;
   private final CartItemRepository cartItemRepository;
   private final CartItemOptionRepository cartItemOptionRepository;
+
   private final CartValidator cartValidator;
+  private final CartMapper cartMapper;
   private final CatalogClient catalogClient;
 
   @Transactional
   @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 3000))
   public void addCartItem(CartRequest request, Long userId) {
-    cartValidator.validateAddItemSameStore(userId, request.getStoreId());
+    Long storeId = request.getStoreId();
+    cartValidator.validateAddItemSameStore(userId, storeId);
 
     PricingInternalRequest internalRequest = PricingInternalRequest.builder()
-        .storeId(request.getStoreId())
+        .storeId(storeId)
         .items(request.getItems())
         .build();
 
     PricingInternalResponse quote = catalogClient.calculate(internalRequest);
 
-    Long storeId = request.getStoreId();
-
     Cart cart = cartRepository.findByUserIdAndStoreIdAndStatus(userId, storeId, Status.ACTIVE)
-        .orElseGet(() -> cartRepository.save(
-            Cart.builder()
-                .userId(userId)
-                .storeName(quote.getStoreName())
-                .storeId(storeId)
-                .status(Status.ACTIVE)
-                .totalPrice(quote.getTotalPrice())
-                .build()
-        ));
+        .orElseGet(() -> cartRepository.save(cartMapper.toCart(userId, quote, Status.ACTIVE)));
 
     List<CartItemOption> cartItemOptions = new ArrayList<>();
     List<CartItem> cartItems = new ArrayList<>();
 
     for (CartItemCalculateResponse item : quote.getItems()) {
-      CartItem cartItem = CartItem.builder()
-          .cart(cart)
-          .menuId(item.getMenuId())
-          .menuName(item.getMenuName())
-          .quantity(item.getQuantity())
-          .basePriceSnapshot(item.getBasePrice())
-          .optionPriceSnapshot(item.getOptionUnitPrice())
-          .unitPriceSnapshot(item.getUnitPrice())
-          .lineTotalSnapshot(item.getLineTotal())
-          .build();
-
+      CartItem cartItem = cartMapper.toCartItem(cart, item);
       cartItems.add(cartItem);
 
       for (OptionPerPrice optionPerPrice : item.getOptionPerPrices()) {
-        CartItemOption cartItemOption = CartItemOption.builder()
-            .cartItem(cartItem)
-            .menuId(item.getMenuId())
-            .menuOptionValueId(optionPerPrice.getOptionValueId())
-            .menuOptionValueName(optionPerPrice.getOptionName())
-            .optionPriceSnapShot(optionPerPrice.getOptionPrice())
-            .build();
+        CartItemOption cartItemOption = cartMapper.toCartItemOption(cartItem, optionPerPrice);
         cartItemOptions.add(cartItemOption);
       }
     }
@@ -104,29 +82,14 @@ public class CartService {
 
     for (CartItem cartItem : cartItems) {
       List<CartItemOption> cartItemOptions = cartItemOptionRepository.findAllByCartItem(cartItem);
-      List<MenuOptionSummary> optionSummaries = new ArrayList<>();
+      List<MenuOptionResponse> menuOptionResponses = new ArrayList<>();
 
       for (CartItemOption cartItemOption : cartItemOptions) {
-        MenuOptionSummary optionSummary = MenuOptionSummary.builder()
-            .optionItemId(cartItemOption.getMenuOptionValueId())
-            .optionName(cartItemOption.getMenuOptionValueName())
-            .optionAdditionalPrice(cartItemOption.getOptionPriceSnapShot())
-            .build();
-        optionSummaries.add(optionSummary);
+        MenuOptionResponse optionSummary = cartMapper.toMenuOptionResponse(cartItemOption);
+        menuOptionResponses.add(optionSummary);
       }
 
-      BigDecimal basePrice = cartItem.getBasePriceSnapshot();
-      BigDecimal lineTotal = cartItem.getLineTotalSnapshot();
-
-      CartItemResponse cartItemResponse = CartItemResponse.builder()
-          .cartItemId(cartItem.getId())
-          .menuId(cartItem.getMenuId())
-          .menuName(cartItem.getMenuName())
-          .options(optionSummaries)
-          .basePrice(basePrice)
-          .lineTotal(lineTotal)
-          .quantity(cartItem.getQuantity())
-          .build();
+      CartItemResponse cartItemResponse = cartMapper.toCartItemResponse(cartItem, menuOptionResponses);
       cartItemResponses.add(cartItemResponse);
 
       totalPrice = totalPrice.add(cartItemResponse.getLineTotal());
