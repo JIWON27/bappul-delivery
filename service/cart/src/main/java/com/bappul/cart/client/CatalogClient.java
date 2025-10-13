@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 )
 public interface CatalogClient {
 
-  @PostMapping("/api/v1/menu/price-snapshots")
+  @PostMapping("/api/v1/menus/price-snapshots")
   PricingInternalResponse calculate(@RequestBody PricingInternalRequest request);
 
 }
