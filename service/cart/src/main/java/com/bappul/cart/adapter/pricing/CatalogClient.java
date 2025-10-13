@@ -1,7 +1,7 @@
-package com.bappul.cart.client;
+package com.bappul.cart.adapter.pricing;
 
-import com.bappul.cart.client.request.PricingInternalRequest;
-import com.bappul.cart.client.response.PricingInternalResponse;
+import com.bappul.cart.adapter.pricing.request.PricingInternalRequest;
+import com.bappul.cart.adapter.pricing.response.PricingInternalResponse;
 import com.bappul.cart.config.OpenFeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;

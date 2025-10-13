@@ -1,12 +1,10 @@
 package com.bappul.cart.application.service;
 
+import com.bappul.cart.adapter.pricing.response.CartItemCalculateResponse;
+import com.bappul.cart.adapter.pricing.response.OptionPerPrice;
+import com.bappul.cart.adapter.pricing.response.PricingInternalResponse;
 import com.bappul.cart.application.mapper.CartMapper;
 import com.bappul.cart.application.validator.CartValidator;
-import com.bappul.cart.client.CatalogClient;
-import com.bappul.cart.client.request.PricingInternalRequest;
-import com.bappul.cart.client.response.CartItemCalculateResponse;
-import com.bappul.cart.client.response.OptionPerPrice;
-import com.bappul.cart.client.response.PricingInternalResponse;
 import com.bappul.cart.domain.entity.Cart;
 import com.bappul.cart.domain.entity.CartItem;
 import com.bappul.cart.domain.entity.CartItemOption;
@@ -14,6 +12,7 @@ import com.bappul.cart.domain.entity.Status;
 import com.bappul.cart.domain.repository.CartItemOptionRepository;
 import com.bappul.cart.domain.repository.CartItemRepository;
 import com.bappul.cart.domain.repository.CartRepository;
+import com.bappul.cart.port.PricingPort;
 import com.bappul.cart.web.v1.request.CartRequest;
 import com.bappul.cart.web.v1.response.CartItemResponse;
 import com.bappul.cart.web.v1.response.CartResponse;
@@ -22,8 +21,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,20 +34,14 @@ public class CartService {
 
   private final CartValidator cartValidator;
   private final CartMapper cartMapper;
-  private final CatalogClient catalogClient;
+  private final PricingPort pricingPort;
 
   @Transactional
-  @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 3000))
   public void addCartItem(CartRequest request, Long userId) {
     Long storeId = request.getStoreId();
     cartValidator.validateAddItemSameStore(userId, storeId);
 
-    PricingInternalRequest internalRequest = PricingInternalRequest.builder()
-        .storeId(storeId)
-        .items(request.getItems())
-        .build();
-
-    PricingInternalResponse quote = catalogClient.calculate(internalRequest);
+    PricingInternalResponse quote = pricingPort.getQuote(storeId, request.getItems());
 
     Cart cart = cartRepository.findByUserIdAndStoreIdAndStatus(userId, storeId, Status.ACTIVE)
         .orElseGet(() -> cartRepository.save(cartMapper.toCart(userId, quote, Status.ACTIVE)));

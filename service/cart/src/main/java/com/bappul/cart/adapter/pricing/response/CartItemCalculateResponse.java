@@ -1,4 +1,4 @@
-package com.bappul.cart.client.response;
+package com.bappul.cart.adapter.pricing.response;
 
 import java.math.BigDecimal;
 import java.util.List;

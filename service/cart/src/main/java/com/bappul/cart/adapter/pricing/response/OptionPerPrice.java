@@ -1,7 +1,6 @@
-package com.bappul.cart.client.response;
+package com.bappul.cart.adapter.pricing.response;
 
 import java.math.BigDecimal;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,9 +11,8 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PricingInternalResponse {
-  Long storeId;
-  String storeName;
-  List<CartItemCalculateResponse> items;
-  BigDecimal totalPrice;
+public class OptionPerPrice {
+  Long optionValueId;
+  String optionName;
+  BigDecimal optionPrice;
 }

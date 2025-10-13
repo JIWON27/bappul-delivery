@@ -1,4 +1,4 @@
-package com.bappul.cart.client.request;
+package com.bappul.cart.adapter.pricing.request;
 
 import com.bappul.cart.web.v1.request.CartItemRequest;
 import java.util.List;
