@@ -62,11 +62,10 @@ public class CartService {
     cartItemOptionRepository.saveAll(cartItemOptions);
   }
 
-
   @Transactional(readOnly = true)
   public CartResponse getCartItems(Long userId) {
     Cart cart = cartValidator.getMyCart(userId);
-    List<CartItem> cartItems = cartItemRepository.findAllByCart((cart));
+    List<CartItem> cartItems = cartItemRepository.findAllByCart(cart);
 
     List<CartItemResponse> cartItemResponses = new ArrayList<>();
     BigDecimal totalPrice = BigDecimal.ZERO;
@@ -74,6 +73,8 @@ public class CartService {
     for (CartItem cartItem : cartItems) {
       List<CartItemOption> cartItemOptions = cartItemOptionRepository.findAllByCartItem(cartItem);
       List<MenuOptionResponse> menuOptionResponses = new ArrayList<>();
+
+      // 여기서 확인
 
       for (CartItemOption cartItemOption : cartItemOptions) {
         MenuOptionResponse optionSummary = cartMapper.toMenuOptionResponse(cartItemOption);
@@ -86,6 +87,6 @@ public class CartService {
       totalPrice = totalPrice.add(cartItemResponse.getLineTotal());
     }
 
-    return CartResponse.from(cart, cartItemResponses, totalPrice);
+    return cartMapper.toCartResponse(cart, cartItemResponses, totalPrice);
   }
 }

@@ -1,6 +1,5 @@
 package com.bappul.cart.web.v1.response;
 
-import com.bappul.cart.domain.entity.Cart;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.AccessLevel;
@@ -19,15 +18,4 @@ public class CartResponse {
   String storeName;
   List<CartItemResponse> cartItems;
   BigDecimal totalPrice;
-
-  public static CartResponse from(Cart cart, List<CartItemResponse> cartItems, BigDecimal totalPrice) {
-    return CartResponse.builder()
-        .cartId(cart.getId())
-        .storeId(cart.getStoreId())
-        .storeName(cart.getStoreName())
-        .cartItems(cartItems)
-        .totalPrice(totalPrice)
-        .build();
-
-  }
 }

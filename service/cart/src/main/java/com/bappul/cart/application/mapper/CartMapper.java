@@ -8,7 +8,9 @@ import com.bappul.cart.domain.entity.CartItem;
 import com.bappul.cart.domain.entity.CartItemOption;
 import com.bappul.cart.domain.entity.Status;
 import com.bappul.cart.web.v1.response.CartItemResponse;
+import com.bappul.cart.web.v1.response.CartResponse;
 import com.bappul.cart.web.v1.response.MenuOptionResponse;
+import java.math.BigDecimal;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -26,6 +28,8 @@ public interface CartMapper {
   @Mapping(target = "unitPriceSnapshot", source = "cartItemQuote.unitPrice")
   @Mapping(target = "lineTotalSnapshot", source = "cartItemQuote.lineTotal")
   CartItem toCartItem(Cart cart, CartItemCalculateResponse cartItemQuote);
+
+  CartResponse toCartResponse(Cart cart, List<CartItemResponse> cartItems, BigDecimal totalPrice);
 
   @Mapping(target = "cartItem", source = "cartItem")
   @Mapping(target = "menuOptionValueId", source = "optionPerPrice.optionValueId")
