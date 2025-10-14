@@ -1,34 +1,40 @@
 package com.bappul.pomotion.application.service;
 
-import com.bappul.pomotion.domain.entity.CouponPolicy;
-import java.time.LocalDateTime;
-import org.springframework.stereotype.Service;
+import static com.bappul.pomotion.exception.ServiceExceptionCode.INVALID_EXPIRATION_TYPE;
 
-@Service
+import com.bappul.pomotion.application.utils.TimeUtils;
+import com.bappul.pomotion.domain.entity.CouponPolicy;
+import com.bappul.pomotion.domain.entity.ExpirationType;
+import exception.ServiceException;
+import java.time.LocalDateTime;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
 public class ExpirationCalculator {
 
-  /**
-   * [TODO] 시간 만료일 디테일 챙기기
-   * 현재는 단순하게 LocalDateTime으로..
-   */
+  private final TimeUtils timeUtils;
 
-  public LocalDateTime getExpiresAt(CouponPolicy policy) {
+  public LocalDateTime computeExpiresAt(CouponPolicy policy) {
     switch (policy.getExpirationType()) {
       case COUPON_CREATED -> {
-        // 생성일 ~ 생성일 + validDays
-        LocalDateTime now =  LocalDateTime.now();
-        return now.plusDays(policy.getValidDays());
+        return timeUtils.now().plusDays(policy.getValidDays());
       }
       case FIXED_PERIOD -> {
-        // startDay ~ endDays
         return policy.getEndDate();
       }
       case ISSUE_RELATIVE -> {
-        // 발급일 ~ validDays
         return null;
       }
     }
-    throw new IllegalArgumentException("Invalid expiration type");
+    throw new ServiceException(INVALID_EXPIRATION_TYPE);
   }
 
+  public LocalDateTime computeExpiresAt(CouponPolicy policy, LocalDateTime issuedAt) {
+    if (policy.getExpirationType() != ExpirationType.ISSUE_RELATIVE) {
+      return computeExpiresAt(policy);
+    }
+    return issuedAt.plusDays(policy.getValidDays());
+  }
 }
