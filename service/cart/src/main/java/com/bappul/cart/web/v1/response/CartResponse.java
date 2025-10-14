@@ -16,6 +16,6 @@ public class CartResponse {
   Long cartId;
   Long storeId;
   String storeName;
-  List<CartItemResponse> cartItems;
+  List<CartItemResponse> items;
   BigDecimal totalPrice;
 }

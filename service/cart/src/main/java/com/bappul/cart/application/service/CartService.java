@@ -82,7 +82,7 @@ public class CartService {
       CartItemResponse cartItemResponse = cartMapper.toCartItemResponse(cartItem, menuOptionResponses);
       cartItemResponses.add(cartItemResponse);
 
-      totalPrice = totalPrice.add(cartItemResponse.getLineTotal());
+      totalPrice = totalPrice.add(cartItemResponse.getLineTotalPrice());
     }
 
     return cartMapper.toCartResponse(cart, cartItemResponses, totalPrice);

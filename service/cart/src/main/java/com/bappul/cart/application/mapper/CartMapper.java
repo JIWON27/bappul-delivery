@@ -29,7 +29,10 @@ public interface CartMapper {
   @Mapping(target = "lineTotalSnapshot", source = "cartItemQuote.lineTotal")
   CartItem toCartItem(Cart cart, CartItemCalculateResponse cartItemQuote);
 
-  CartResponse toCartResponse(Cart cart, List<CartItemResponse> cartItems, BigDecimal totalPrice);
+  @Mapping(target = "cartId", source = "cart.id")
+  @Mapping(target = "items", source = "items")
+  @Mapping(target = "totalPrice", source = "totalPrice")
+  CartResponse toCartResponse(Cart cart, List<CartItemResponse> items, BigDecimal totalPrice);
 
   @Mapping(target = "cartItem", source = "cartItem")
   @Mapping(target = "menuOptionValueId", source = "optionPerPrice.optionValueId")
@@ -39,12 +42,13 @@ public interface CartMapper {
 
   @Mapping(target = "optionItemId", source = "cartItemOption.menuOptionValueId")
   @Mapping(target = "optionName", source = "cartItemOption.menuOptionValueName")
-  @Mapping(target = "optionAdditionalPrice", source = "cartItemOption.optionPriceSnapShot")
+  @Mapping(target = "additionalPrice", source = "cartItemOption.optionPriceSnapShot")
   MenuOptionResponse toMenuOptionResponse(CartItemOption cartItemOption);
 
+  @Mapping(target = "cartItemId", source = "cartItem.id")
   @Mapping(target = "options", source = "options")
-  @Mapping(target = "basePrice", source = "cartItem.basePriceSnapshot")
-  @Mapping(target = "lineTotal", source = "cartItem.lineTotalSnapshot")
+  @Mapping(target = "menuBasePrice", source = "cartItem.basePriceSnapshot")
+  @Mapping(target = "lineTotalPrice", source = "cartItem.lineTotalSnapshot")
   CartItemResponse toCartItemResponse(CartItem cartItem, List<MenuOptionResponse> options);
 
 }

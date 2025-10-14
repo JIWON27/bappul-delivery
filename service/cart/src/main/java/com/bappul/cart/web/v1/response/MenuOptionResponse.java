@@ -14,5 +14,5 @@ import lombok.experimental.FieldDefaults;
 public class MenuOptionResponse {
   Long optionItemId;
   String optionName;
-  BigDecimal optionAdditionalPrice;
+  BigDecimal additionalPrice;
 }
