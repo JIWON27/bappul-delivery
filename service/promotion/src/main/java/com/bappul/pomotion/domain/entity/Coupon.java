@@ -53,11 +53,9 @@ public class Coupon {
   @Column(name = "type", nullable = false)
   CouponType type;
 
-  // 유저에게 발급/등록(Claim)된 순간
   @Column(name = "issued_at")
   LocalDateTime issuedAt;
 
-  // 발급/생성/고정기간 기준으로 '그 시점에 확정'해서 저장
   @Column(name = "expires_at", nullable = false)
   LocalDateTime expiresAt;
 
@@ -72,18 +70,18 @@ public class Coupon {
   @Column(name = "updated_at")
   LocalDateTime updatedAt;
 
-
   public void updateUser(Long userId){
     this.userId = userId;
   }
 
-  public void markAsIssued(){
+  public void markAsIssued(LocalDateTime issuedAt){
     this.status = CouponStatus.ISSUED;
+    this.issuedAt = issuedAt;
   }
 
-  public void markAsUsed(){
+  public void markAsUsed(LocalDateTime usedAt){
     this.status = CouponStatus.USED;
-    this.usedAt = LocalDateTime.now();
+    this.usedAt = usedAt;
   }
 
   public void markAsCancelled(){
