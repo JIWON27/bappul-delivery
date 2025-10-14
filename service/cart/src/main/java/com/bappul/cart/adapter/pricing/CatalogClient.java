@@ -1,0 +1,19 @@
+package com.bappul.cart.adapter.pricing;
+
+import com.bappul.cart.adapter.pricing.request.PricingInternalRequest;
+import com.bappul.cart.adapter.pricing.response.PricingInternalResponse;
+import com.bappul.cart.config.OpenFeignConfig;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+@FeignClient(
+    name = "catalog-service",
+    configuration = OpenFeignConfig.class
+)
+public interface CatalogClient {
+
+  @PostMapping("/api/v1/menus/price-snapshots")
+  PricingInternalResponse calculate(@RequestBody PricingInternalRequest request);
+
+}
