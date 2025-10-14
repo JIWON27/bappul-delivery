@@ -74,8 +74,6 @@ public class CartService {
       List<CartItemOption> cartItemOptions = cartItemOptionRepository.findAllByCartItem(cartItem);
       List<MenuOptionResponse> menuOptionResponses = new ArrayList<>();
 
-      // 여기서 확인
-
       for (CartItemOption cartItemOption : cartItemOptions) {
         MenuOptionResponse optionSummary = cartMapper.toMenuOptionResponse(cartItemOption);
         menuOptionResponses.add(optionSummary);
