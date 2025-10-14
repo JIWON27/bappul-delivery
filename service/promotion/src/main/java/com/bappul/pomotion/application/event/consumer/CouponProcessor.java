@@ -3,7 +3,9 @@ package com.bappul.pomotion.application.event.consumer;
 import static com.bappul.pomotion.exception.ServiceExceptionCode.JSON_DESERIALIZATION_ERROR;
 
 import com.bappul.pomotion.application.event.contracts.coupon.CouponEventPayload;
+import com.bappul.pomotion.application.mapper.CouponMapper;
 import com.bappul.pomotion.application.service.ExpirationCalculator;
+import com.bappul.pomotion.application.utils.TimeUtils;
 import com.bappul.pomotion.application.validator.CouponValidator;
 import com.bappul.pomotion.domain.entity.Coupon;
 import com.bappul.pomotion.domain.entity.CouponPolicy;
@@ -23,10 +25,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CouponProcessor {
 
+  private final CouponRepository couponRepository;
   private final ObjectMapper objectMapper;
   private final CouponValidator couponValidator;
+  private final CouponMapper couponMapper;
   private final ExpirationCalculator expirationCalculator;
-  private final CouponRepository couponRepository;
+  private final TimeUtils timeUtils;
 
   @Transactional
   public void processCouponUsed(String payload) {
@@ -41,7 +45,7 @@ public class CouponProcessor {
           return;
         }
 
-        coupon.markAsUsed();
+        coupon.markAsUsed(timeUtils.now());
         couponPolicy.incrementRedeemedQuantity();
       }
     } catch (JsonProcessingException e) {
@@ -76,16 +80,9 @@ public class CouponProcessor {
       couponValidator.validateCouponIssueLimit(couponPolicy.getIssuedQuantity(), 1, couponPolicy.getTotalQuantity());
 
       // 쿠폰 생성
-      LocalDateTime expiresAt = expirationCalculator.getExpiresAt(couponPolicy);
-      Coupon coupon = Coupon.builder()
-          .userId(event.getUserId())
-          .couponPolicy(couponPolicy)
-          .status(CouponStatus.CREATED)
-          .type(CouponType.ONLINE)
-          .code(null)
-          .expiresAt(expiresAt)
-          .issuedAt(LocalDateTime.now())
-          .build();
+      LocalDateTime expiresAt = expirationCalculator.computeExpiresAt(couponPolicy);
+      Coupon coupon = couponMapper.toCoupon(event.getUserId(), couponPolicy, CouponStatus.CREATED, CouponType.ONLINE, null, expiresAt);
+      coupon.markAsIssued(timeUtils.now());
       couponRepository.save(coupon);
 
     } catch (JsonProcessingException e) {
