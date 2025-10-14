@@ -1,5 +1,6 @@
 package com.bappul.pomotion.application.service;
 
+import com.bappul.pomotion.application.utils.TimeUtils;
 import com.bappul.pomotion.application.validator.CouponValidator;
 import com.bappul.pomotion.domain.entity.Coupon;
 import com.bappul.pomotion.domain.entity.CouponPolicy;
@@ -23,6 +24,7 @@ public class CouponBuilder {
   private final CouponRepository couponRepository;
   private final CouponValidator couponValidator;
   private final ExpirationCalculator expirationCalculator;
+  private final TimeUtils timeUtils;
 
   private static final String CHAR_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   private static final int CODE_LENGTH = 40;
@@ -44,7 +46,7 @@ public class CouponBuilder {
           .type(request.getType())
           .code(code)
           .expiresAt(expiresAt)
-          .issuedAt(LocalDateTime.now())
+          .issuedAt(timeUtils.now())
           .build();
       coupons.add(coupon);
     }
@@ -61,7 +63,7 @@ public class CouponBuilder {
         .type(CouponType.ONLINE)
         .code(null)
         .expiresAt(expiresAt)
-        .issuedAt(LocalDateTime.now())
+        .issuedAt(timeUtils.now())
         .build();
   }
 
