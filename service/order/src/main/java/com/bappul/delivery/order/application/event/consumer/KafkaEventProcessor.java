@@ -5,7 +5,7 @@ import static com.bappul.delivery.order.exception.ServiceExceptionCode.JSON_SERI
 
 import com.bappul.delivery.order.application.event.contracts.common.AggregateType;
 import com.bappul.delivery.order.application.event.contracts.common.EventType;
-import com.bappul.delivery.order.application.event.contracts.coupon.CouponEventPayload;
+import com.bappul.delivery.order.application.event.contracts.coupon.CouponEvent;
 import com.bappul.delivery.order.application.event.contracts.delivery.DeliveryCompleteEvent;
 import com.bappul.delivery.order.application.event.contracts.delivery.DeliveryPickUpEvent;
 import com.bappul.delivery.order.application.event.contracts.payment.PaymentRefundedEvent;
@@ -137,15 +137,17 @@ public class KafkaEventProcessor {
 
   // TODO 메서드명 조금 더 고민
   private OutboxRecorded recordPaymentEvent(Order order, EventType eventType) {
-    CouponEventPayload event = CouponEventPayload.builder()
+    UUID eventId = UUID.randomUUID();
+
+    CouponEvent event = CouponEvent.builder()
+        .eventId(eventId.toString())
+        .eventType(eventType.name())
         .orderId(order.getId())
         .couponId(order.getCouponId())
         .userId(order.getUserId())
         .build();
 
     String payload = toJson(event);
-
-    UUID eventId = UUID.randomUUID();
     outboxEventRepository.save(OutBoxEvent.builder()
         .eventId(eventId)
         .eventType(eventType)

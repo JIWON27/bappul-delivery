@@ -10,7 +10,9 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CouponEventPayload {
+public class CouponEvent {
+  String eventId;
+  String eventType;
   Long orderId;
   Long userId;
   Long couponId;
