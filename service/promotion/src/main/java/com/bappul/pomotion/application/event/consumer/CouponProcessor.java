@@ -28,11 +28,13 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CouponProcessor {
@@ -107,12 +109,15 @@ public class CouponProcessor {
     String payload = record.value();
 
     checkRequiredEventFields(eventId, eventType, payload);
+    if (!idempotencyGuard(eventId, eventType, payload)) {
+      log.info("[inbox] duplicate eventId={}, skip", eventId);
+      return;
+    }
 
     try {
-      InboxEvent inboxEvent = validateAndSaveInboxEvent(eventId, eventType, payload);
       T event = parse(payload, clazz);
       consumer.accept(event);
-      inboxEvent.markAsProcessed(timeUtils.now());
+      inboxEventRepository.updateStatusAndProcessedAt(eventId, InboxStatus.PROCESSED, timeUtils.now());
     } catch (JsonProcessingException e) {
       inboxEventRepository.updateStatusAndProcessedAt(eventId, InboxStatus.FAILED, timeUtils.now());
       throw new ServiceException(JSON_DESERIALIZATION_ERROR);
@@ -131,14 +136,18 @@ public class CouponProcessor {
     return header == null ? null : new String(header.value(), StandardCharsets.UTF_8);
   }
 
-  private InboxEvent validateAndSaveInboxEvent (String eventId, String eventType, String payload){
+  private boolean idempotencyGuard(String eventId, String eventType, String payload){
     Optional<InboxEvent> inboxEvent = inboxEventRepository.findByEventId(eventId);
-    return inboxEvent.orElseGet(() -> inboxEventRepository.save(InboxEvent.builder()
+    if (inboxEvent.isPresent()) {
+      return false;
+    }
+    inboxEventRepository.save(InboxEvent.builder()
         .eventId(eventId)
         .eventType(eventType)
         .payload(payload)
         .status(InboxStatus.RECEIVED)
-        .build()));
+        .build());
+    return true;
   }
 
   private void checkRequiredEventFields(String eventId, String eventType, String payload) {
