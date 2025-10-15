@@ -1,6 +1,7 @@
 package com.bappul.pomotion.application.service;
 
-import com.bappul.pomotion.application.event.consumer.FirstComeCouponIssueEvent;
+import com.bappul.pomotion.application.event.contracts.common.EventType;
+import com.bappul.pomotion.application.event.contracts.coupon.FirstComeCouponIssueEvent;
 import com.bappul.pomotion.application.validator.CouponValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
@@ -28,15 +29,21 @@ public class FirstComeCouponIssueService {
     couponValidator.validateAlreadyIssued(couponPolicyId, userId);
 
     try {
-      FirstComeCouponIssueEvent evt = new FirstComeCouponIssueEvent(userId, couponPolicyId);
       UUID eventId = UUID.randomUUID();
+
+      FirstComeCouponIssueEvent evt = FirstComeCouponIssueEvent.builder()
+          .eventId(eventId.toString())
+          .eventType(EventType.FIRST_COME_COUPON_ISSUE.name())
+          .userId(userId)
+          .couponPolicyId(couponPolicyId)
+          .build();
 
       Message<String> msg = MessageBuilder
           .withPayload(objectMapper.writeValueAsString(evt))
           .setHeader(KafkaHeaders.TOPIC, "first-come-coupon-request")
           .setHeader(KafkaHeaders.KEY, String.valueOf(couponPolicyId))
           .setHeader("event-id", eventId.toString())
-          .setHeader("event-type", "CouponIssueRequested")
+          .setHeader("event-type", EventType.FIRST_COME_COUPON_ISSUE.name())
           .setHeader("occurred-at", Instant.now().toString())
           .build();
       kafkaTemplate.send(msg);
