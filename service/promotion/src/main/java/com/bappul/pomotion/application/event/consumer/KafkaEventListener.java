@@ -1,10 +1,11 @@
 package com.bappul.pomotion.application.event.consumer;
 
+import exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -15,23 +16,30 @@ public class KafkaEventListener {
   private final CouponProcessor couponProcessor;
 
   @KafkaListener(topics = "coupon-used", groupId = "promotion")
-  public void onCouponUsedEvent(@Payload String payload, Acknowledgment ack) throws Exception {
-    log.info("[promotion - KafkaEventListener] 쿠폰 사용 이벤트 수신");
-    couponProcessor.processCouponUsed(payload);
-    ack.acknowledge();
+  public void onCouponUsedEvent(ConsumerRecord<String, String> record, Acknowledgment ack){
+    handle(record, ack, () -> couponProcessor.processCouponUsed(record));
   }
 
   @KafkaListener(topics = "coupon-rollback", groupId = "promotion")
-  public void onCouponRollbackEvent(@Payload String payload, Acknowledgment ack) throws Exception {
-    log.info("[promotion - KafkaEventListener] 쿠폰 사용 롤백 수신");
-    couponProcessor.processCouponRollback(payload);
-    ack.acknowledge();
+  public void onCouponRollbackEvent(ConsumerRecord<String, String> record, Acknowledgment ack){
+    handle(record, ack, () -> couponProcessor.processCouponRollback(record));
   }
 
   @KafkaListener(topics = "first-come-coupon-request", groupId = "promotion")
-  public void onFirstComeCouponIssueRequested(@Payload String payload, Acknowledgment ack
-  ) throws Exception {
-    couponProcessor.processFirstCouponIssue(payload);
-    ack.acknowledge();
+  public void onFirstComeCouponIssueRequested(ConsumerRecord<String, String> record, Acknowledgment ack){
+    handle(record, ack, () -> couponProcessor.processFirstCouponIssue(record));
+  }
+
+  private void handle(ConsumerRecord<String, String> record, Acknowledgment ack, Runnable processor) {
+    try {
+      log.info("[promotion] Consume topic={} partition={} offset={} key={}",
+          record.topic(), record.partition(), record.offset(), record.key());
+      processor.run();
+      ack.acknowledge();
+    } catch (Exception e) {
+      log.error("[promotion] Processing failed topic={} partition={} offset={} key={}",
+          record.topic(), record.partition(), record.offset(), record.key(), e);
+      throw new ServiceException();
+    }
   }
 }
