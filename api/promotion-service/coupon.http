@@ -24,7 +24,7 @@ Content-Type: application/json
   client.global.set("token", "Bearer " + response.body.accessToken);
 %}
 
-### 쿠폰 정책 생성
+### 쿠폰 정책 생성 - 고정일 기준
 POST http://localhost:8000/api/v1/admin/coupons/policies
 Content-Type: application/json
 Authorization: {{token}}
@@ -44,11 +44,53 @@ Authorization: {{token}}
   "totalQuantity": 100
 }
 
+### 쿠폰 정책 생성 - 쿠폰 생성일 기준
+POST http://localhost:8000/api/v1/admin/coupons/policies
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "couponName": "전메뉴 10% 할인 쿠폰",
+  "discountType": "FIXED",
+  "discountValue": 10000,
+  "minOrderPrice": 30000,
+  "maxDiscountPrice": 10000,
+  "validDays" : 90,
+  "expirationType": "COUPON_CREATED",
+  "issueMode": "NORMAL",
+  "activeStatus": "ACTIVE",
+  "startDate": "2025-09-20T00:00:00",
+  "endDate": "2025-10-31T23:59:59",
+  "perUserLimit": 1,
+  "totalQuantity": 100
+}
+
+### 쿠폰 정책 생성 - 발급일 기준
+POST http://localhost:8000/api/v1/admin/coupons/policies
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "couponName": "전메뉴 10% 할인 쿠폰",
+  "discountType": "FIXED",
+  "discountValue": 10000,
+  "minOrderPrice": 30000,
+  "maxDiscountPrice": 10000,
+  "validDays" : 90,
+  "expirationType": "ISSUE_RELATIVE",
+  "issueMode": "NORMAL",
+  "activeStatus": "ACTIVE",
+  "startDate": "2025-09-20T00:00:00",
+  "endDate": "2025-10-31T23:59:59",
+  "perUserLimit": 1,
+  "totalQuantity": 100
+}
+
 ### 쿠폰 정책 조회
 GET http://localhost:8000/api/v1/admin/coupons/policies/1
 Authorization: {{token}}
 
-### 실물 쿠폰 대량 생산
+### 실물 쿠폰 대량 생산 - 일반 쿠폰
 POST http://localhost:8000/api/v1/admin/coupons
 Content-Type: application/json
 Authorization: {{token}}
@@ -56,17 +98,48 @@ Authorization: {{token}}
 {
   "couponPolicyId": 1,
   "quantity": 50,
+  "prefix" : "2025-BIGEVENT",
+  "type" : "ONLINE",
+  "issueMode" : "NORMAL"
+}
+
+### 실물 쿠폰 대량 생산 - 선착순
+POST http://localhost:8000/api/v1/admin/coupons
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "couponPolicyId": 2,
+  "quantity": 10,
   "prefix" : "2025BIGEVENT",
-  "couponType" : "ONLINE",
+  "type" : "ONLINE",
   "issueMode" : "FIRST_COME"
 }
 
-### 온라인 쿠폰 발급
+### 온라인 쿠폰 발급 - 고정일
 POST http://localhost:8000/api/v1/coupons/policies/1
+Content-Type: application/json
+Authorization: {{token}}
+
+### 온라인 쿠폰 발급 - 생성일
+POST http://localhost:8000/api/v1/coupons/policies/2
+Content-Type: application/json
+Authorization: {{token}}
+
+### 온라인 쿠폰 발급 - 발급일
+POST http://localhost:8000/api/v1/coupons/policies/3
 Content-Type: application/json
 Authorization: {{token}}
 
 
 ### 선착순 쿠폰 발급 요청 API
 POST http://localhost:8000/api/v1/coupons/policies/1/firstcome
+Authorization: {{token}}
+
+### 내 쿠폰 조회
+GET http://localhost:8000/api/v1/coupons
+Authorization: {{token}}
+
+### 쿠폰 단건 조회
+GET http://localhost:8000/api/v1/coupons/1
 Authorization: {{token}}
