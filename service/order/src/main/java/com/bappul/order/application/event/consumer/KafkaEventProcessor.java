@@ -1,0 +1,186 @@
+package com.bappul.order.application.event.consumer;
+
+import static com.bappul.order.exception.ServiceExceptionCode.JSON_DESERIALIZATION_ERROR;
+import static com.bappul.order.exception.ServiceExceptionCode.JSON_SERIALIZATION_ERROR;
+
+import com.bappul.order.application.event.contracts.common.AggregateType;
+import com.bappul.order.application.event.contracts.common.EventType;
+import com.bappul.order.application.event.contracts.coupon.CouponEvent;
+import com.bappul.order.application.event.contracts.delivery.DeliveryCompleteEvent;
+import com.bappul.order.application.event.contracts.delivery.DeliveryPickUpEvent;
+import com.bappul.order.application.event.contracts.payment.PaymentRefundedEvent;
+import com.bappul.order.application.event.contracts.payment.PaymentSuccessEvent;
+import com.bappul.order.application.event.producer.OutboxRecorded;
+import com.bappul.order.application.validator.OrderValidator;
+import com.bappul.order.domain.entitiy.InboxEvent;
+import com.bappul.order.domain.entitiy.InboxStatus;
+import com.bappul.order.domain.entitiy.Order;
+import com.bappul.order.domain.entitiy.OutBoxEvent;
+import com.bappul.order.domain.entitiy.OutboxStatus;
+import com.bappul.order.domain.repository.InboxEventRepository;
+import com.bappul.order.domain.repository.OutboxEventRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import exception.ServiceException;
+import java.time.LocalDateTime;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class KafkaEventProcessor {
+
+  private final OutboxEventRepository outboxEventRepository;
+  private final InboxEventRepository inboxEventRepository;
+  private final OrderValidator orderValidator;
+  private final ObjectMapper objectMapper;
+  private final ApplicationEventPublisher eventPublisher;
+
+  @Transactional
+  public void processPaymentSuccess(String eventId, String eventType, String payload) {
+    InboxEvent inboxEvent = validateAndSaveInboxEvent(eventId, eventType, payload);
+
+    try {
+      PaymentSuccessEvent paymentSuccessEvent = objectMapper.readValue(payload, PaymentSuccessEvent.class);
+      Order order = orderValidator.getOrderById(paymentSuccessEvent.getOrderId());
+      OutboxRecorded outboxRecorded = recordPaymentEvent(order, EventType.COUPON_USED);
+
+      order.markAsPaid();
+      inboxEvent.markAsProcessed();
+
+      eventPublisher.publishEvent(outboxRecorded);
+
+    } catch (JsonProcessingException e) {
+      inboxEvent.markAsFailed();
+      throw new ServiceException(JSON_DESERIALIZATION_ERROR);
+    }
+  }
+
+  @Transactional
+  public void processPaymentFailed(String eventId, String eventType, String payload) {
+    InboxEvent inboxEvent = validateAndSaveInboxEvent(eventId, eventType, payload);
+
+    try {
+      PaymentSuccessEvent paymentSuccessEvent = objectMapper.readValue(payload, PaymentSuccessEvent.class);
+      Order order = orderValidator.getOrderById(paymentSuccessEvent.getOrderId());
+
+      order.markAsCanceled();
+      inboxEvent.markAsProcessed();
+
+      // TODO 결제 실패 알림 Notification 기능 구현
+
+    } catch (JsonProcessingException e) {
+      inboxEvent.markAsFailed();
+      throw new ServiceException(JSON_DESERIALIZATION_ERROR);
+    }
+
+  }
+
+  @Transactional
+  public void processPaymentRefunded(String eventId, String eventType, String payload) {
+    InboxEvent inboxEvent = validateAndSaveInboxEvent(eventId, eventType, payload);
+
+    try {
+      PaymentRefundedEvent paymentFailEvent = objectMapper.readValue(payload, PaymentRefundedEvent.class);
+      Order order = orderValidator.getOrderById(paymentFailEvent.getOrderId());
+      OutboxRecorded outboxRecorded = recordPaymentEvent(order, EventType.COUPON_ROLLBACK);
+
+      order.markAsRefunded();
+      inboxEvent.markAsProcessed();
+
+      eventPublisher.publishEvent(outboxRecorded);
+    } catch (JsonProcessingException e) {
+      inboxEvent.markAsFailed();
+      throw new ServiceException(JSON_DESERIALIZATION_ERROR);
+    }
+  }
+
+  @Transactional
+  public void processDeliveryComplete(String eventId, String eventType, String payload) {
+    InboxEvent inboxEvent = validateAndSaveInboxEvent(eventId, eventType, payload);
+
+    try {
+      // TODO 배달 완료 시 쿠폰 이벤트를 발행하고, 결제 완료 시 쿠폰 예약 이벤트를 발행
+      // TODO 쿠폰 예약 이벤트를 발행하는 이유는 쿠폰 중복 사용을 방지하기 위한 것.
+
+      DeliveryCompleteEvent event = objectMapper.readValue(payload, DeliveryCompleteEvent.class);
+      Order order = orderValidator.getOrderById(event.getOrderId());
+
+      order.markAsCompleted();
+      inboxEvent.markAsProcessed();
+    } catch (JsonProcessingException e) {
+      inboxEvent.markAsFailed();
+      throw new ServiceException(JSON_DESERIALIZATION_ERROR);
+    }
+  }
+
+  @Transactional
+  public void processDeliveryPickUp(String eventId, String eventType, String payload) {
+    InboxEvent inboxEvent = validateAndSaveInboxEvent(eventId, eventType, payload);
+
+    try {
+      DeliveryPickUpEvent event = objectMapper.readValue(payload, DeliveryPickUpEvent.class);
+      Order order = orderValidator.getOrderById(event.getOrderId());
+
+      order.markAsPickUp();
+      inboxEvent.markAsProcessed();
+    } catch (JsonProcessingException e) {
+      inboxEvent.markAsFailed();
+      throw new ServiceException(JSON_DESERIALIZATION_ERROR);
+    }
+  }
+
+  // TODO 메서드명 조금 더 고민
+  private OutboxRecorded recordPaymentEvent(Order order, EventType eventType) {
+    UUID eventId = UUID.randomUUID();
+
+    CouponEvent event = CouponEvent.builder()
+        .eventId(eventId.toString())
+        .eventType(eventType.name())
+        .orderId(order.getId())
+        .couponId(order.getCouponId())
+        .userId(order.getUserId())
+        .build();
+
+    String payload = toJson(event);
+    outboxEventRepository.save(OutBoxEvent.builder()
+        .eventId(eventId)
+        .eventType(eventType)
+        .aggregateId(order.getId())
+        .aggregateType(AggregateType.ORDER)
+        .partitionKey(order.getId().toString())
+        .payload(payload)
+        .status(OutboxStatus.PENDING)
+        .occurredAt(LocalDateTime.now())
+        .build());
+    return new OutboxRecorded(eventId, eventType);
+  }
+
+  private InboxEvent validateAndSaveInboxEvent(String eventId, String eventType, String payload) {
+    boolean exists = inboxEventRepository.existsByEventId(eventId);
+    if (exists) {
+      return inboxEventRepository.findByEventId(eventId);
+    }
+
+    InboxEvent inboxEvent = InboxEvent.builder()
+        .eventId(eventId)
+        .eventType(eventType)
+        .payload(payload)
+        .status(InboxStatus.RECEIVED)
+        .build();
+    return inboxEventRepository.save(inboxEvent);
+  }
+
+  private String toJson(Object obj) {
+    try {
+      return objectMapper.writeValueAsString(obj);
+    } catch (JsonProcessingException e) {
+      throw new ServiceException(JSON_SERIALIZATION_ERROR);
+    }
+  }
+}
