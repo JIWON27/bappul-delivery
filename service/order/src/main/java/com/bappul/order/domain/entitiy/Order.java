@@ -38,7 +38,7 @@ public class Order {
   @Column(name = "order_no", nullable = false, unique = true)
   UUID orderNo;
 
-  @Column(name = "idempotency_key", nullable = false, unique = true)
+  @Column(name = "idempotency_key", unique = true)
   String idempotencyKey;
 
   @Column(name = "merchant_uid", nullable = false, unique = true)
