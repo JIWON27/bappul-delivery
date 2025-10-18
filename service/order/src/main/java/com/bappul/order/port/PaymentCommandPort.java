@@ -1,7 +1,7 @@
 package com.bappul.order.port;
 
-import com.bappul.order.adapter.request.PaymentCreateRequest;
+import java.math.BigDecimal;
 
 public interface PaymentCommandPort {
-  String fakePreparePayment(PaymentCreateRequest request);
+  String fakePreparePayment(Long orderId, BigDecimal payablePrice);
 }
