@@ -1,4 +1,4 @@
-package com.bappul.order.client.response;
+package com.bappul.order.adapter.response;
 
 import java.math.BigDecimal;
 import java.util.List;

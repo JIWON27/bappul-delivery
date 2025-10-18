@@ -1,7 +1,6 @@
-package com.bappul.order.client.request;
+package com.bappul.order.adapter.response;
 
-import com.bappul.order.web.v1.request.OrderItemRequest;
-import java.util.List;
+import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +11,8 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PricingInternalRequest {
-  Long storeId;
-  List<OrderItemRequest> items;
+public class OptionPerPrice {
+  Long optionValueId;
+  String optionName;
+  BigDecimal optionPrice;
 }

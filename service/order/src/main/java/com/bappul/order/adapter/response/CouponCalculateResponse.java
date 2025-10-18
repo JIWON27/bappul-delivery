@@ -1,4 +1,4 @@
-package com.bappul.order.client.response;
+package com.bappul.order.adapter.response;
 
 public class CouponCalculateResponse {
 

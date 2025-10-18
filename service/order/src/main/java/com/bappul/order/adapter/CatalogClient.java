@@ -1,7 +1,7 @@
-package com.bappul.order.client;
+package com.bappul.order.adapter;
 
-import com.bappul.order.client.request.PricingInternalRequest;
-import com.bappul.order.client.response.PricingInternalResponse;
+import com.bappul.order.adapter.request.PricingInternalRequest;
+import com.bappul.order.adapter.response.PricingInternalResponse;
 import com.bappul.order.config.OpenFeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;

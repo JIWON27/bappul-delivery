@@ -1,7 +1,7 @@
-package com.bappul.order.client;
+package com.bappul.order.adapter;
 
-import com.bappul.order.client.request.CouponDiscountCalculateRequest;
-import com.bappul.order.client.response.CouponDiscountCalculateResponse;
+import com.bappul.order.adapter.request.CouponDiscountCalculateRequest;
+import com.bappul.order.adapter.response.CouponDiscountCalculateResponse;
 import com.bappul.order.config.OpenFeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
     path = "${coupon.base-path}/${coupon.api.version}",
     configuration = OpenFeignConfig.class
 )
-public interface CouponClient {
+public interface PromotionClient {
 
   @PostMapping("/coupons/discount")
   CouponDiscountCalculateResponse getCouponDiscountCalculate(@RequestBody CouponDiscountCalculateRequest request);

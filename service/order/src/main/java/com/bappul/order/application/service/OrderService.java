@@ -2,6 +2,12 @@ package com.bappul.order.application.service;
 
 import static com.bappul.order.exception.ServiceExceptionCode.JSON_SERIALIZATION_ERROR;
 
+import com.bappul.order.adapter.request.CouponDiscountCalculateRequest;
+import com.bappul.order.adapter.request.PaymentCreateRequest;
+import com.bappul.order.adapter.response.CartItemCalculateResponse;
+import com.bappul.order.adapter.response.CouponDiscountCalculateResponse;
+import com.bappul.order.adapter.response.OptionPerPrice;
+import com.bappul.order.adapter.response.PricingInternalResponse;
 import com.bappul.order.application.event.contracts.common.AggregateType;
 import com.bappul.order.application.event.contracts.common.EventType;
 import com.bappul.order.application.event.contracts.order.OrderAcceptEvent;
@@ -10,16 +16,6 @@ import com.bappul.order.application.event.contracts.order.OrderReadyEvent;
 import com.bappul.order.application.event.contracts.order.OrderRejectEvent;
 import com.bappul.order.application.event.producer.OutboxRecorded;
 import com.bappul.order.application.validator.OrderValidator;
-import com.bappul.order.client.CatalogClient;
-import com.bappul.order.client.CouponClient;
-import com.bappul.order.client.PaymentClient;
-import com.bappul.order.client.request.CouponDiscountCalculateRequest;
-import com.bappul.order.client.request.PaymentCreateRequest;
-import com.bappul.order.client.request.PricingInternalRequest;
-import com.bappul.order.client.response.CartItemCalculateResponse;
-import com.bappul.order.client.response.CouponDiscountCalculateResponse;
-import com.bappul.order.client.response.OptionPerPrice;
-import com.bappul.order.client.response.PricingInternalResponse;
 import com.bappul.order.domain.entitiy.Order;
 import com.bappul.order.domain.entitiy.OrderLine;
 import com.bappul.order.domain.entitiy.OrderLineOption;
@@ -30,6 +26,9 @@ import com.bappul.order.domain.repository.OrderLineOptionRepository;
 import com.bappul.order.domain.repository.OrderLineRepository;
 import com.bappul.order.domain.repository.OrderRepository;
 import com.bappul.order.domain.repository.OutboxEventRepository;
+import com.bappul.order.port.CatalogQuotePort;
+import com.bappul.order.port.PaymentCommandPort;
+import com.bappul.order.port.PromotionQuotePort;
 import com.bappul.order.web.v1.request.OrderRequest;
 import com.bappul.order.web.v1.response.OrderResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -61,23 +60,18 @@ public class OrderService {
   private final ObjectMapper objectMapper;
   private final KafkaTemplate<String, String> kafkaTemplate;
 
-  private final CatalogClient catalogClient;
-  private final CouponClient couponClient;
-  private final PaymentClient paymentClient;
+  private final CatalogQuotePort calculateAdapter;
+  private final PromotionQuotePort promotionQuoteAdapter;
+  private final PaymentCommandPort paymentCommandAdapter;
   private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   public OrderResponse createOrder(OrderRequest request, Long userId) {
     orderValidator.validateIdempotencyKey(request.getIdempotencyKey());
 
-    // 카탈로그 서비스로 부터 가격 조회
-    PricingInternalRequest catalogInternalRequest = PricingInternalRequest.builder()
-        .storeId(request.getStoreId())
-        .items(request.getOrderItems())
-        .build();
-    PricingInternalResponse quote = catalogClient.calculate(catalogInternalRequest);
-
+    PricingInternalResponse quote = calculateAdapter.getQuote(request.getStoreId(), request.getOrderItems());
     BigDecimal discountPrice = BigDecimal.ZERO;
+
     // 조회한 가격으로 쿠폰 서비스로 보내 최종 할인가 계산
     if (Objects.nonNull(request.getCouponId())) {
       CouponDiscountCalculateRequest couponInternalRequest = CouponDiscountCalculateRequest.builder()
@@ -86,8 +80,7 @@ public class OrderService {
           .userId(userId)
           .price(quote.getTotalPrice())
           .build();
-      CouponDiscountCalculateResponse discountResponse = couponClient.getCouponDiscountCalculate(
-          couponInternalRequest);
+      CouponDiscountCalculateResponse discountResponse = promotionQuoteAdapter.getDiscountPrice(couponInternalRequest);
       discountPrice = discountResponse.getDiscount();
     }
 
@@ -150,7 +143,7 @@ public class OrderService {
         .orderId(order.getId())
         .payablePrice(payablePrice)
         .build();
-    String merchantUid = paymentClient.fakePreparePayment(paymentCreateRequest);
+    String merchantUid = paymentCommandAdapter.fakePreparePayment(paymentCreateRequest);
 
     return OrderResponse.builder()
         .orderId(order.getId())

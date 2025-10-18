@@ -1,4 +1,4 @@
-package com.bappul.order.client.request;
+package com.bappul.order.adapter.request;
 
 import java.math.BigDecimal;
 import lombok.AccessLevel;
