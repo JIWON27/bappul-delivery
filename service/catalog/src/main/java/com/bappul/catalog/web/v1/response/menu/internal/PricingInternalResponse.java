@@ -16,5 +16,6 @@ public class PricingInternalResponse {
   Long storeId;
   String storeName;
   List<CartItemCalculateResponse> items;
+  BigDecimal deliveryFeePrice;
   BigDecimal totalPrice;
 }

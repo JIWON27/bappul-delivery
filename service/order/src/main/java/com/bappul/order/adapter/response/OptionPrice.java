@@ -1,4 +1,4 @@
-package com.bappul.catalog.web.v1.response.menu.internal;
+package com.bappul.order.adapter.response;
 
 import java.math.BigDecimal;
 import lombok.AccessLevel;
