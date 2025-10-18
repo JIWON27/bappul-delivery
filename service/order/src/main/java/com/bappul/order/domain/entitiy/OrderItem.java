@@ -21,14 +21,14 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 
-@Table(name = "order_line")
+@Table(name = "order_item")
 @Entity
 @Getter
 @DynamicInsert
 @DynamicUpdate
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderLine {
+public class OrderItem {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,27 +44,26 @@ public class OrderLine {
   @Column(name = "menu_name")
   String menuName;
 
-
   @Column(name = "base_price")
-  BigDecimal basePrice; // 음식 단품 값
+  BigDecimal basePrice; // 메뉴 단품 값
 
   @Column(name = "unit_price")
-  BigDecimal unitPrice; // 음식 단품 값 + 옵션 값
+  BigDecimal unitPrice; // 메뉴 단품 + 메뉴 옵션 값
 
-  @Column(name = "line_total")
-  BigDecimal lineTotal; // (음식 단품 값 + 옵션 값) * 수량
+  @Column(name = "line_total_price")
+  BigDecimal lineTotalPrice; // (음식 단품 값 + 옵션 값) * 수량
 
-  @Column(name = "line_discount")
-  BigDecimal lineDiscount; // 음식에 들어간 할인 가격
+  @Column(name = "line_discount_price")
+  BigDecimal lineDiscountPrice; // 음식에 들어간 할인 가격
 
-  @Column(name = "refunded_price")
-  BigDecimal refundedPrice; // 환불해줄때의 가격 = line_total_price - line_discount
+  @Column(name = "refund_price")
+  BigDecimal refundPrice; // 환불 금액
 
   @Column(name = "quantity")
   int quantity;
 
-  @Column(name = "refunded_quantity")
-  int refundedQuantity;
+  @Column(name = "refund_quantity")
+  int refundQuantity;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
@@ -75,18 +74,18 @@ public class OrderLine {
   LocalDateTime updatedAt;
 
   @Builder
-  public OrderLine(Order order, Long menuId, String menuName, BigDecimal basePrice,
-      BigDecimal unitPrice, BigDecimal lineTotal, BigDecimal lineDiscount, BigDecimal refundedPrice,
-      int quantity, int refundedQuantity) {
+  public OrderItem(Order order, Long menuId, String menuName, BigDecimal basePrice,
+      BigDecimal unitPrice, BigDecimal lineTotalPrice, BigDecimal lineDiscountPrice,
+      BigDecimal refundPrice, int quantity, int refundQuantity) {
     this.order = order;
     this.menuId = menuId;
     this.menuName = menuName;
     this.basePrice = basePrice;
     this.unitPrice = unitPrice;
-    this.lineTotal = lineTotal;
-    this.lineDiscount = lineDiscount;
-    this.refundedPrice = refundedPrice;
+    this.lineTotalPrice = lineTotalPrice;
+    this.lineDiscountPrice = lineDiscountPrice;
+    this.refundPrice = refundPrice;
     this.quantity = quantity;
-    this.refundedQuantity = refundedQuantity;
+    this.refundQuantity = refundQuantity;
   }
 }

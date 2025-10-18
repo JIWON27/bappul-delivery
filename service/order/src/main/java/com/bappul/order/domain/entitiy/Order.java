@@ -41,6 +41,9 @@ public class Order {
   @Column(name = "idempotency_key", nullable = false, unique = true)
   String idempotencyKey;
 
+  @Column(name = "merchant_uid", nullable = false, unique = true)
+  String merchantUid;
+
   @Column(name = "user_id", nullable = false)
   Long userId;
 
@@ -55,22 +58,19 @@ public class Order {
 
   @Enumerated(EnumType.STRING)
   @Column(name = "order_status", nullable = false, length = 30)
-  OrderStatus orderStatus; //
+  OrderStatus orderStatus;
 
-  @Column(name = "line_total", nullable = false)
-  BigDecimal lineTotal; // 해당 주문 총 가격(배달비 제외)
+  @Column(name = "order_subtotal_price", nullable = false)
+  BigDecimal orderSubtotalPrice; // 배달비, 할인 제외 가격
 
-  @Column(name = "delivery_fee", nullable = false)
-  BigDecimal deliveryFee; // 배달비
+  @Column(name = "delivery_fee_price", nullable = false)
+  BigDecimal deliveryFeePrice; // 배달비
 
-  @Column(name = "order_discount", nullable = false)
-  BigDecimal orderDiscount; // 할인 금액
+  @Column(name = "order_discount_price", nullable = false)
+  BigDecimal orderDiscountPrice; // 할인 금액
 
-  @Column(name = "payable_total", nullable = false)
-  BigDecimal payableTotal; // 결제 총 금액 = lineTotal + deliveryFee
-
-  @Column(name = "cancel_reason", length = 200)
-  String cancelReason;
+  @Column(name = "payable_total_price", nullable = false)
+  BigDecimal payableTotalPrice; // 최종 결제금액
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
@@ -81,21 +81,21 @@ public class Order {
   LocalDateTime updatedAt;
 
   @Builder
-  public Order(UUID orderNo, String idempotencyKey, Long userId, Long addressId, Long storeId,
-      Long couponId, OrderStatus orderStatus, BigDecimal lineTotal, BigDecimal deliveryFee,
-      BigDecimal orderDiscount, BigDecimal payableTotal, String cancelReason) {
+  public Order(UUID orderNo, String idempotencyKey, String merchantUid, Long userId, Long addressId,
+      Long storeId, Long couponId, OrderStatus orderStatus, BigDecimal orderSubtotalPrice,
+      BigDecimal deliveryFeePrice, BigDecimal orderDiscountPrice, BigDecimal payableTotalPrice) {
     this.orderNo = orderNo;
     this.idempotencyKey = idempotencyKey;
+    this.merchantUid = merchantUid;
     this.userId = userId;
     this.addressId = addressId;
     this.storeId = storeId;
     this.couponId = couponId;
     this.orderStatus = orderStatus;
-    this.lineTotal = lineTotal;
-    this.deliveryFee = deliveryFee;
-    this.orderDiscount = orderDiscount;
-    this.payableTotal = payableTotal;
-    this.cancelReason = cancelReason;
+    this.orderSubtotalPrice = orderSubtotalPrice;
+    this.deliveryFeePrice = deliveryFeePrice;
+    this.orderDiscountPrice = orderDiscountPrice;
+    this.payableTotalPrice = payableTotalPrice;
   }
 
   public void markAsPaid() {
@@ -128,5 +128,9 @@ public class Order {
 
   public void markAsRefunded() {
     this.orderStatus = OrderStatus.REFUNDED;
+  }
+
+  public void updateMerchantUid(String merchantUid) {
+    this.merchantUid = merchantUid;
   }
 }

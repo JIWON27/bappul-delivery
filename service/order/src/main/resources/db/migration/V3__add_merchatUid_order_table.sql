@@ -1,0 +1,2 @@
+ALTER TABLE orders
+ADD COLUMN merchant_uid VARCHAR(100) NOT NULL

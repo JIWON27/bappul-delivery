@@ -21,22 +21,22 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 
-@Table(name = "order_line_option")
+@Table(name = "order_item_option")
 @Entity
 @Getter
 @DynamicInsert
 @DynamicUpdate
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderLineOption {
+public class OrderItemOption {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "order_line_id")
-  OrderLine orderLine;
+  @JoinColumn(name = "order_item_id")
+  OrderItem orderItem;
 
   @Column(name = "option_value_id")
   Long optionValueId;
@@ -56,9 +56,9 @@ public class OrderLineOption {
   LocalDateTime updatedAt;
 
   @Builder
-  public OrderLineOption(OrderLine orderLine, Long optionValueId, String optionName,
+  public OrderItemOption(OrderItem orderItem, Long optionValueId, String optionName,
       BigDecimal optionPrice) {
-    this.orderLine = orderLine;
+    this.orderItem = orderItem;
     this.optionValueId = optionValueId;
     this.optionName = optionName;
     this.optionPrice = optionPrice;
