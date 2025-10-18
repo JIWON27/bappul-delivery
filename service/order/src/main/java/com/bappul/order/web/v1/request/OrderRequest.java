@@ -1,6 +1,5 @@
 package com.bappul.order.web.v1.request;
 
-import java.math.BigDecimal;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -15,8 +14,5 @@ public class OrderRequest {
   String idempotencyKey;
   Long addressId;
   Long couponId;
-  Long clientPayableWon;
   List<OrderItemRequest> orderItems;
-  List<Long> cartItemIds;
-  BigDecimal deliveryFee;
 }

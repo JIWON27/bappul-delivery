@@ -12,5 +12,5 @@ import lombok.experimental.FieldDefaults;
 public class OrderResponse {
   Long orderId;
   String merchantUid;
-  BigDecimal orderTotal;
+  BigDecimal orderTotalPrice;
 }
