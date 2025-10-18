@@ -1,6 +1,5 @@
 package com.bappul.order.application.validator;
 
-import static com.bappul.order.exception.ServiceExceptionCode.IDEMPOTENCYKEY;
 import static com.bappul.order.exception.ServiceExceptionCode.INVALID_ORDER_STATUS;
 import static com.bappul.order.exception.ServiceExceptionCode.NOT_FOUND_ORDER;
 import static com.bappul.order.exception.ServiceExceptionCode.UNAUTHORIZED_ORDER_ACCESS;
@@ -19,12 +18,13 @@ public class OrderValidator {
 
   private final OrderRepository orderRepository;
 
-  public void validateIdempotencyKey(String idempotencyKey) {
-    boolean exist = orderRepository.existsByIdempotencyKey(idempotencyKey);
-    if (exist) {
-      // TODO 예외 코드 고민
-      throw new ServiceException(IDEMPOTENCYKEY);
-    }
+  public boolean idempotencyKeyGuard(String idempotencyKey) {
+    return orderRepository.existsByIdempotencyKey(idempotencyKey);
+  }
+
+  public Order getOrderByIdempotencyKey(String idempotencyKey) {
+    return orderRepository.findByIdempotencyKey((idempotencyKey))
+        .orElseThrow(() -> new ServiceException(NOT_FOUND_ORDER));
   }
 
   public Order getOrderById(Long orderId) {
