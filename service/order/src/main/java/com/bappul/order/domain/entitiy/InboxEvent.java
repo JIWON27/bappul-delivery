@@ -33,7 +33,7 @@ public class InboxEvent {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
 
-  @Column(name = "event_id", nullable = false)
+  @Column(name = "event_id", nullable = false, unique = true)
   String eventId;
 
   @Column(name = "event_type", nullable = false, length = 128)
@@ -51,6 +51,9 @@ public class InboxEvent {
   @Column(nullable = false, updatable = false)
   LocalDateTime createdAt;
 
+  @Column(name = "processed_at")
+  LocalDateTime processedAt;
+
   @Builder
   public InboxEvent(String eventId, String eventType, String payload, InboxStatus status) {
     this.eventId = eventId;
@@ -59,11 +62,17 @@ public class InboxEvent {
     this.status = status;
   }
 
-  public void markAsProcessed() {
+  public void markAsProcessed(LocalDateTime now) {
     this.status = InboxStatus.PROCESSED;
+    this.processedAt = now;
   }
 
-  public void markAsFailed() {
+  public void markAsFailed(LocalDateTime now) {
     this.status = InboxStatus.FAILED;
+    this.processedAt = now;
+  }
+
+  public void updateProcessedAt(LocalDateTime now) {
+    this.processedAt = now;
   }
 }
