@@ -20,17 +20,14 @@ Authorization: {{token}}
   "storeId": 1,
   "idempotencyKey": "order-test-20250925-0001",
   "addressId": 1,
-  "couponId": 2,
-  "clientPayableWon": 35000,
+  "couponId": 1,
   "orderItems": [
     {
-      "menuId": 2,
-      "optionValueIds": [3, 6],
+      "menuId": 1,
+      "optionValueIds": [1, 2],
       "quantity": 2
     }
-  ],
-  "cartItemIds": [1],
-  "deliveryFee": 3000
+  ]
 }
 
 ### 주문 생성 - 쿠폰 X
@@ -43,16 +40,13 @@ Authorization: {{token}}
   "idempotencyKey": "order-test-20250925-0001",
   "addressId": 1,
   "couponId": null,
-  "clientPayableWon": 35000,
   "orderItems": [
     {
-      "menuId": 2,
-      "optionValueIds": [3, 6],
+      "menuId": 1,
+      "optionValueIds": [1, 2],
       "quantity": 2
     }
-  ],
-  "cartItemIds": [1],
-  "deliveryFee": 3000
+  ]
 }
 
 ### 주문 취소
@@ -64,7 +58,7 @@ POST http://localhost:8000/api/v1/login
 Content-Type: application/json
 
 {
-  "email": "admin@example.com",
+  "email": "owner@example.com",
   "password": "securePass123"
 }
 

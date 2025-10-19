@@ -22,7 +22,7 @@ import com.bappul.catalog.web.v1.response.menu.MenuOptionValueResponse;
 import com.bappul.catalog.web.v1.response.menu.MenuResponse;
 import com.bappul.catalog.web.v1.response.menu.MenuSummaryResponse;
 import com.bappul.catalog.web.v1.response.menu.internal.CartItemCalculateResponse;
-import com.bappul.catalog.web.v1.response.menu.internal.OptionPerPrice;
+import com.bappul.catalog.web.v1.response.menu.internal.OptionPrice;
 import com.bappul.catalog.web.v1.response.menu.internal.PricingInternalResponse;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -172,8 +172,9 @@ public class MenuService {
       List<MenuOptionValue> menuOptionValues = menuOptionValueRepository.findAllById(optionValueIds);
       menuValidator.validateOptionBelongsToMenu(menuId, menuOptionValues);
 
-      List<OptionPerPrice> optionPerPrices = menuOptionValues.stream()
-          .map(value -> new OptionPerPrice(value.getId(), value.getName(), value.getAdditionalPrice())).toList();
+      List<OptionPrice> optionPrices = menuOptionValues.stream()
+          .map(value -> new OptionPrice(value.getId(), value.getName(), value.getAdditionalPrice()))
+          .toList();
 
       // 계산
       BigDecimal basePrice = menu.getPrice();
@@ -186,7 +187,7 @@ public class MenuService {
       CartItemCalculateResponse cartItemCalculateResponse = pricingMapper.toCartItemCalculateResponse(
           menu,
           basePrice,
-          optionPerPrices,
+          optionPrices,
           optionUnitPrice,
           unitPrice,
           cartItemRequest.getQuantity(),

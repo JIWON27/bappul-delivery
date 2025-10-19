@@ -1,0 +1,2 @@
+ALTER TABLE orders
+MODIFY COLUMN merchant_uid VARCHAR(100) NULL;

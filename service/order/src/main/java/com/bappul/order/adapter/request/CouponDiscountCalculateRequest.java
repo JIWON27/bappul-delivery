@@ -1,7 +1,6 @@
-package com.bappul.catalog.web.v1.response.menu.internal;
+package com.bappul.order.adapter.request;
 
 import java.math.BigDecimal;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,10 +11,9 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PricingInternalResponse {
+public class CouponDiscountCalculateRequest {
+  Long couponId;
+  Long userId;
   Long storeId;
-  String storeName;
-  List<CartItemCalculateResponse> items;
-  BigDecimal deliveryFeePrice;
-  BigDecimal totalPrice;
+  BigDecimal price; // 배달비 제외한 순수 메뉴 가격
 }

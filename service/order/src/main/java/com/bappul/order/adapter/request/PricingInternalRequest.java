@@ -1,6 +1,6 @@
-package com.bappul.catalog.web.v1.response.menu.internal;
+package com.bappul.order.adapter.request;
 
-import java.math.BigDecimal;
+import com.bappul.order.web.v1.request.OrderItemRequest;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -12,10 +12,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PricingInternalResponse {
+public class PricingInternalRequest {
   Long storeId;
-  String storeName;
-  List<CartItemCalculateResponse> items;
-  BigDecimal deliveryFeePrice;
-  BigDecimal totalPrice;
+  List<OrderItemRequest> items;
 }
