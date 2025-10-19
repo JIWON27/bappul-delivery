@@ -16,17 +16,14 @@ import com.bappul.pomotion.domain.entity.Coupon;
 import com.bappul.pomotion.domain.entity.CouponPolicy;
 import com.bappul.pomotion.domain.entity.CouponStatus;
 import com.bappul.pomotion.domain.entity.CouponType;
-import com.bappul.pomotion.domain.entity.InboxEvent;
 import com.bappul.pomotion.domain.entity.InboxStatus;
 import com.bappul.pomotion.domain.repository.CouponRepository;
-import com.bappul.pomotion.domain.repository.InboxEventRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import exception.ServiceException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -40,13 +37,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class CouponProcessor {
 
   private final CouponRepository couponRepository;
-  private final InboxEventRepository inboxEventRepository;
-
   private final CouponValidator couponValidator;
+  private final InboxManager inboxManager;
+  private final TimeUtils timeUtils;
   private final CouponMapper couponMapper;
   private final ExpirationCalculator expirationCalculator;
   private final ObjectMapper objectMapper;
-  private final TimeUtils timeUtils;
 
   @Transactional
   public void processCouponUsed(ConsumerRecord<String, String> record) {
@@ -109,7 +105,7 @@ public class CouponProcessor {
     String payload = record.value();
 
     checkRequiredEventFields(eventId, eventType, payload);
-    if (!idempotencyGuard(eventId, eventType, payload)) {
+    if (!inboxManager.idempotencyGuard(eventId, eventType, payload)) {
       log.info("[inbox] duplicate eventId={}, skip", eventId);
       return;
     }
@@ -117,12 +113,12 @@ public class CouponProcessor {
     try {
       T event = parse(payload, clazz);
       consumer.accept(event);
-      inboxEventRepository.updateStatusAndProcessedAt(eventId, InboxStatus.PROCESSED, timeUtils.now());
+      inboxManager.inboxWriter(eventId, InboxStatus.PROCESSED);
     } catch (JsonProcessingException e) {
-      inboxEventRepository.updateStatusAndProcessedAt(eventId, InboxStatus.FAILED, timeUtils.now());
+      inboxManager.inboxWriter(eventId, InboxStatus.FAILED);
       throw new ServiceException(JSON_DESERIALIZATION_ERROR);
     } catch (Exception e) {
-      inboxEventRepository.updateStatusAndProcessedAt(eventId, InboxStatus.FAILED, timeUtils.now());
+      inboxManager.inboxWriter(eventId, InboxStatus.FAILED);
       throw new ServiceException(EVENT_PROCESSING_FAILED);
     }
   }
@@ -134,20 +130,6 @@ public class CouponProcessor {
   private String parseHeader (ConsumerRecord < String, String > record, String headerKey){
     Header header = record.headers().lastHeader(headerKey);
     return header == null ? null : new String(header.value(), StandardCharsets.UTF_8);
-  }
-
-  private boolean idempotencyGuard(String eventId, String eventType, String payload){
-    Optional<InboxEvent> inboxEvent = inboxEventRepository.findByEventId(eventId);
-    if (inboxEvent.isPresent()) {
-      return false;
-    }
-    inboxEventRepository.save(InboxEvent.builder()
-        .eventId(eventId)
-        .eventType(eventType)
-        .payload(payload)
-        .status(InboxStatus.RECEIVED)
-        .build());
-    return true;
   }
 
   private void checkRequiredEventFields(String eventId, String eventType, String payload) {

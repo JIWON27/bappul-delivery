@@ -1,11 +1,11 @@
 package com.bappul.order.application.event.consumer;
 
+import exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -16,63 +16,41 @@ public class KafkaEventListener {
   private final KafkaEventProcessor orderEventProcessor;
 
   @KafkaListener(topics = "payment-success", groupId = "order")
-  public void onPaymentSuccessRequested(
-      @Payload String payload,
-      @Header("event-id") String eventId,
-      @Header(value = "event-type", required = false) String eventType,
-      Acknowledgment ack
-  ) throws Exception {
-    log.info("[order - KafkaEventListener] 결제 성공 이벤트 수신 = {}", eventId);
-    orderEventProcessor.processPaymentSuccess(eventId, eventType, payload);
-    ack.acknowledge();
+  public void onPaymentSuccessEvent(ConsumerRecord<String, String> record, Acknowledgment ack) throws Exception {
+    handle(record, ack, () -> orderEventProcessor.processPaymentSuccess(record));
   }
 
   @KafkaListener(topics = "payment-failed", groupId = "order")
-  public void onPaymentFailRequested(
-      @Payload String payload,
-      @Header("event-id") String eventId,
-      @Header(value = "event-type", required = false) String eventType,
-      Acknowledgment ack
-  ) throws Exception {
-    log.error("[order - KafkaEventListener] 결제 실패 이벤트 수신 = {}", eventId);
-    orderEventProcessor.processPaymentFailed(eventId, eventType, payload);
-    ack.acknowledge();
+  public void onPaymentFailEvent(ConsumerRecord<String, String> record, Acknowledgment ack) throws Exception {
+    handle(record, ack, () -> orderEventProcessor.processPaymentFail(record));
   }
 
   @KafkaListener(topics = "payment-refunded", groupId = "order")
-  public void onPaymentRefundRequested(
-      @Payload String payload,
-      @Header("event-id") String eventId,
-      @Header(value = "event-type", required = false) String eventType,
-      Acknowledgment ack
-  ) throws Exception {
-    log.info("[order - KafkaEventListener] 결제 환불 이벤트 수신 = {}", eventId);
-    orderEventProcessor.processPaymentRefunded(eventId, eventType, payload);
-    ack.acknowledge();
+  public void onPaymentRefundEvent(ConsumerRecord<String, String> record, Acknowledgment ack) throws Exception {
+    handle(record, ack, () -> orderEventProcessor.processPaymentRefund(record));
   }
 
   @KafkaListener(topics = "delivery-complete", groupId = "order")
-  public void onDeliveryComplete(
-      @Payload String payload,
-      @Header("event-id") String eventId,
-      @Header(value = "event-type", required = false) String eventType,
-      Acknowledgment ack
-  ) throws Exception {
-    log.info("[order - KafkaEventListener] 배달 완료 이벤트 수신 = {}", eventId);
-    orderEventProcessor.processDeliveryComplete(eventId, eventType, payload);
-    ack.acknowledge();
+  public void onDeliveryCompleteEvent(ConsumerRecord<String, String> record, Acknowledgment ack) throws Exception {
+    handle(record, ack, () -> orderEventProcessor.processDeliveryComplete(record));
   }
 
   @KafkaListener(topics = "delivery-pickup", groupId = "order")
-  public void onDeliveryPickUp(
-      @Payload String payload,
-      @Header("event-id") String eventId,
-      @Header(value = "event-type", required = false) String eventType,
-      Acknowledgment ack
-  ) throws Exception {
-    log.info("[order - KafkaEventListener] 배달 픽업 이벤트 수신 = {}", eventId);
-    orderEventProcessor.processDeliveryPickUp(eventId, eventType, payload);
-    ack.acknowledge();
+  public void onDeliveryPickUpEvent(ConsumerRecord<String, String> record, Acknowledgment ack) throws Exception {
+    handle(record, ack, () -> orderEventProcessor.processDeliveryPickUp(record));
+  }
+
+  private void handle(ConsumerRecord<String, String> record, Acknowledgment ack, Runnable processor) {
+    try {
+      log.info("[주문 서비스] Consume topic={} partition={} offset={} key={}",
+          record.topic(), record.partition(), record.offset(), record.key());
+      processor.run();
+      ack.acknowledge();
+    } catch (Exception e) {
+      log.error("[주문 서비스] Processing failed topic={} partition={} offset={} key={}",
+          record.topic(), record.partition(), record.offset(), record.key(), e);
+      throw new ServiceException();
+    }
   }
 
 }
