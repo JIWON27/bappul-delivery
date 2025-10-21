@@ -1,28 +1,26 @@
 package com.bappul.delivery.payment.application.event.consumer;
 
+import com.bappul.event.kafka.KafkaEventListener;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class KafkaEventListener {
+public class PaymentEventListener {
 
-  private final KafkaEventProcessor kafkaEventProcessor;
+  private final PaymentEventProcessor eventProcessor;
+  private final KafkaEventListener kafkaEventListener;
 
-  @KafkaListener(topics = {"order-cancel", "order-reject"}, groupId = "payment")
-  public void onOrderCancelOrReject(
-      @Payload String payload,
-      @Header("event-id") String eventId,
-      @Header(value = "event-type", required = false) String eventType,
-      @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-      Acknowledgment ack
-  ) throws Exception {
-    kafkaEventProcessor.processOrderCancelOrReject(payload);
-    ack.acknowledge();
+  @KafkaListener(topics = {"order-cancel"}, groupId = "payment")
+  public void onOrderCancelEvent(ConsumerRecord<String, String> record, Acknowledgment ack) {
+    kafkaEventListener.handle(record, ack, () -> eventProcessor.processOrderCancel(record));
+  }
+
+  @KafkaListener(topics = {"order-reject"}, groupId = "payment")
+  public void onOrderRejectEvent(ConsumerRecord<String, String> record, Acknowledgment ack) {
+    kafkaEventListener.handle(record, ack, () -> eventProcessor.processOrderReject(record));
   }
 }
