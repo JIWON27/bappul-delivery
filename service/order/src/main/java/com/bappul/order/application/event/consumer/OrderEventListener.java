@@ -1,6 +1,6 @@
 package com.bappul.order.application.event.consumer;
 
-import exception.ServiceException;
+import com.bappul.event.kafka.KafkaEventListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -11,46 +11,33 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class KafkaEventListener {
+public class OrderEventListener {
 
-  private final KafkaEventProcessor orderEventProcessor;
+  private final KafkaEventListener kafkaEventListener;
+  private final OrderEventProcessor orderEventProcessor;
 
   @KafkaListener(topics = "payment-success", groupId = "order")
-  public void onPaymentSuccessEvent(ConsumerRecord<String, String> record, Acknowledgment ack) throws Exception {
-    handle(record, ack, () -> orderEventProcessor.processPaymentSuccess(record));
+  public void onPaymentSuccessEvent(ConsumerRecord<String, String> record, Acknowledgment ack) {
+    kafkaEventListener.handle(record, ack, () -> orderEventProcessor.processPaymentSuccess(record));
   }
 
   @KafkaListener(topics = "payment-failed", groupId = "order")
-  public void onPaymentFailEvent(ConsumerRecord<String, String> record, Acknowledgment ack) throws Exception {
-    handle(record, ack, () -> orderEventProcessor.processPaymentFail(record));
+  public void onPaymentFailEvent(ConsumerRecord<String, String> record, Acknowledgment ack) {
+    kafkaEventListener.handle(record, ack, () -> orderEventProcessor.processPaymentFail(record));
   }
 
   @KafkaListener(topics = "payment-refunded", groupId = "order")
-  public void onPaymentRefundEvent(ConsumerRecord<String, String> record, Acknowledgment ack) throws Exception {
-    handle(record, ack, () -> orderEventProcessor.processPaymentRefund(record));
+  public void onPaymentRefundEvent(ConsumerRecord<String, String> record, Acknowledgment ack) {
+    kafkaEventListener.handle(record, ack, () -> orderEventProcessor.processPaymentRefund(record));
   }
 
   @KafkaListener(topics = "delivery-complete", groupId = "order")
-  public void onDeliveryCompleteEvent(ConsumerRecord<String, String> record, Acknowledgment ack) throws Exception {
-    handle(record, ack, () -> orderEventProcessor.processDeliveryComplete(record));
+  public void onDeliveryCompleteEvent(ConsumerRecord<String, String> record, Acknowledgment ack) {
+    kafkaEventListener.handle(record, ack, () -> orderEventProcessor.processDeliveryComplete(record));
   }
 
   @KafkaListener(topics = "delivery-pickup", groupId = "order")
-  public void onDeliveryPickUpEvent(ConsumerRecord<String, String> record, Acknowledgment ack) throws Exception {
-    handle(record, ack, () -> orderEventProcessor.processDeliveryPickUp(record));
+  public void onDeliveryPickUpEvent(ConsumerRecord<String, String> record, Acknowledgment ack) {
+    kafkaEventListener.handle(record, ack, () -> orderEventProcessor.processDeliveryPickUp(record));
   }
-
-  private void handle(ConsumerRecord<String, String> record, Acknowledgment ack, Runnable processor) {
-    try {
-      log.info("[주문 서비스] Consume topic={} partition={} offset={} key={}",
-          record.topic(), record.partition(), record.offset(), record.key());
-      processor.run();
-      ack.acknowledge();
-    } catch (Exception e) {
-      log.error("[주문 서비스] Processing failed topic={} partition={} offset={} key={}",
-          record.topic(), record.partition(), record.offset(), record.key(), e);
-      throw new ServiceException();
-    }
-  }
-
 }
