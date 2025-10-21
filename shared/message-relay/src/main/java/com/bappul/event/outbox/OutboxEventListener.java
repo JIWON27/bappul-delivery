@@ -1,0 +1,43 @@
+package com.bappul.event.outbox;
+
+import static com.bappul.event.exception.ServiceExceptionCode.NOT_FOUND_OUTBOX_EVENT;
+
+import exception.ServiceException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class OutboxEventListener {
+
+  private final OutboxEventRepository outboxEventRepository;
+  private final KafkaTemplate<String ,String> kafkaTemplate;
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void handleEvent(OutboxRecorded event) {
+    OutBoxEvent outBox = outboxEventRepository.findByEventId(event.getEventId())
+        .orElseThrow(() -> new ServiceException(NOT_FOUND_OUTBOX_EVENT));
+
+    try {
+      Message<String> msg = MessageBuilder
+          .withPayload(outBox.getPayload())
+          .setHeader(KafkaHeaders.TOPIC, outBox.getTopic())
+          .setHeader(KafkaHeaders.KEY, outBox.getPartitionKey())
+          .setHeader("event-id", event.getEventId().toString())
+          .setHeader("event-type", outBox.getEventType())
+          .setHeader("occurred-at", outBox.getOccurredAt().toString())
+          .build();
+      kafkaTemplate.send(msg);
+    } catch (Exception e) {
+      log.error(e.getMessage());
+    }
+  }
+}
