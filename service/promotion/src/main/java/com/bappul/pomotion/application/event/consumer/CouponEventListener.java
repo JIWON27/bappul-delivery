@@ -1,5 +1,6 @@
 package com.bappul.pomotion.application.event.consumer;
 
+import com.bappul.event.kafka.KafkaEventListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -10,10 +11,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class KafkaEventListener {
+public class CouponEventListener {
 
   private final CouponProcessor couponProcessor;
-  private final com.bappul.event.kafka.KafkaEventListener kafkaEventListener;
+  private final KafkaEventListener kafkaEventListener;
 
   @KafkaListener(topics = "coupon-used", groupId = "promotion")
   public void onCouponUsedEvent(ConsumerRecord<String, String> record, Acknowledgment ack){

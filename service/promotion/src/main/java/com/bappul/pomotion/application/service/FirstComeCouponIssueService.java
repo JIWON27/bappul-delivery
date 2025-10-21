@@ -37,19 +37,18 @@ public class FirstComeCouponIssueService {
           .userId(userId)
           .couponPolicyId(couponPolicyId)
           .build();
+
       String payload = objectMapper.writeValueAsString(evt);
-      for (int i = 0; i < 5; i++) {
-        Message<String> msg = MessageBuilder
-            .withPayload(payload)
-            .setHeader(KafkaHeaders.TOPIC, "first-come-coupon-request")
-            .setHeader(KafkaHeaders.KEY, String.valueOf(couponPolicyId))
-            .setHeader("event-id", eventId.toString())                 // 고정
-            .setHeader("event-type", EventType.FIRST_COME_COUPON_ISSUE.name())
-            .setHeader("occurred-at", Instant.now().toString())
-            .build();
-        kafkaTemplate.send(msg);
-      }
-      //kafkaTemplate.send(msg);
+
+      Message<String> msg = MessageBuilder
+          .withPayload(payload)
+          .setHeader(KafkaHeaders.TOPIC, EventType.FIRST_COME_COUPON_ISSUE.getKafkaTopic())
+          .setHeader(KafkaHeaders.KEY, String.valueOf(couponPolicyId))
+          .setHeader("event-id", eventId.toString())
+          .setHeader("event-type", EventType.FIRST_COME_COUPON_ISSUE.name())
+          .setHeader("occurred-at", Instant.now().toString())
+          .build();
+      kafkaTemplate.send(msg);
     }catch (Exception e) {
       log.error(e.getMessage());
     }
