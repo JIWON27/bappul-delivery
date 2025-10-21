@@ -1,6 +1,5 @@
 package exception;
 
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
