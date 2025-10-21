@@ -40,7 +40,9 @@ dependencies {
     testImplementation 'io.rest-assured:rest-assured:5.4.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.12.0'
 
-    implementation project(":shared:core")
-    implementation project(":shared:image-core")
+    implementation project(':shared:common-web')
+    implementation project(':shared:common-security')
+    implementation project(':shared:common-exception')
+    implementation project(':shared:common-image')
 }
 

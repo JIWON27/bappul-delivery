@@ -11,7 +11,6 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CouponEvent {
-  String eventId;
   String eventType;
   Long orderId;
   Long userId;

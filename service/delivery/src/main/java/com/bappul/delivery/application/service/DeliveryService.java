@@ -1,28 +1,16 @@
 package com.bappul.delivery.application.service;
 
-import static com.bappul.delivery.exception.ServiceExceptionCode.JSON_SERIALIZATION_ERROR;
-
 import com.bappul.delivery.application.event.contracts.common.AggregateType;
 import com.bappul.delivery.application.event.contracts.common.EventType;
-import com.bappul.delivery.application.event.contracts.delivery.DeliveryCompleteEvent;
 import com.bappul.delivery.application.event.contracts.delivery.DeliveryPickUpEvent;
-import com.bappul.delivery.application.event.producer.OutboxRecorded;
 import com.bappul.delivery.application.validator.DeliveryValidator;
 import com.bappul.delivery.domain.entity.Delivery;
-import com.bappul.delivery.domain.entity.OutBoxEvent;
-import com.bappul.delivery.domain.entity.OutboxStatus;
 import com.bappul.delivery.domain.entity.RiderStatus;
-import com.bappul.delivery.domain.repository.OutboxEventRepository;
 import com.bappul.delivery.domain.repository.geo.AdminDongRepository;
 import com.bappul.delivery.web.v1.request.RiderLocation;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import exception.ServiceException;
-import java.time.LocalDateTime;
+import com.bappul.event.outbox.OutboxRecorder;
 import java.util.Objects;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -34,10 +22,8 @@ public class DeliveryService {
 
   private final DeliveryValidator deliveryValidator;
   private final AdminDongRepository adminDongRepository;
-  private final OutboxEventRepository outboxEventRepository;
+  private final OutboxRecorder outboxRecorder;
 
-  private final ObjectMapper objectMapper;
-  private final ApplicationEventPublisher eventPublisher;
   private final RedisTemplate<String, String> redisTemplate;
 
   private final String RIDER_BEFORE_ADMIN_CODE = "rider:admin:%s:before";
@@ -62,23 +48,14 @@ public class DeliveryService {
   public void deliveryPickUp(Long deliveryId, Long riderUserId){
     Delivery delivery = deliveryValidator.getByDeliveryId(deliveryId);
 
-    UUID eventId = UUID.randomUUID();
-
-    DeliveryPickUpEvent event = new DeliveryPickUpEvent(delivery.getOrderId());
-    String payload = toJson(event);
-
-    outboxEventRepository.save(OutBoxEvent.builder()
-        .eventId(eventId)
-        .eventType(EventType.DELIVERY_PICKUP)
-        .aggregateId(delivery.getId())
-        .aggregateType(AggregateType.DELIVERY)
-        .partitionKey(delivery.getId().toString())
-        .payload(payload)
-        .status(OutboxStatus.PENDING)
-        .occurredAt(LocalDateTime.now())
-        .build());
-    OutboxRecorded outboxRecorded = new OutboxRecorded(eventId, EventType.DELIVERY_PICKUP);
-    eventPublisher.publishEvent(outboxRecorded);
+    outboxRecorder.record(
+        EventType.DELIVERY_PICKUP.name(),
+        AggregateType.DELIVERY.name(),
+        EventType.DELIVERY_PICKUP.getKafkaTopic(),
+        delivery.getOrderId(),
+        delivery.getOrderId().toString(),
+        () -> new DeliveryPickUpEvent(delivery.getOrderId())
+    );
 
     delivery.markAsPickUp();
   }
@@ -87,23 +64,14 @@ public class DeliveryService {
   public void deliveryComplete(Long deliveryId){
     Delivery delivery = deliveryValidator.getByDeliveryId(deliveryId);
 
-    UUID eventId = UUID.randomUUID();
-
-    DeliveryCompleteEvent event = new DeliveryCompleteEvent(delivery.getOrderId());
-    String payload = toJson(event);
-
-    outboxEventRepository.save(OutBoxEvent.builder()
-        .eventId(eventId)
-        .eventType(EventType.DELIVERY_COMPLETE)
-        .aggregateId(delivery.getId())
-        .aggregateType(AggregateType.DELIVERY)
-        .partitionKey(delivery.getId().toString())
-        .payload(payload)
-        .status(OutboxStatus.PENDING)
-        .occurredAt(LocalDateTime.now())
-        .build());
-    OutboxRecorded outboxRecorded = new OutboxRecorded(eventId, EventType.DELIVERY_COMPLETE);
-    eventPublisher.publishEvent(outboxRecorded);
+    outboxRecorder.record(
+        EventType.DELIVERY_COMPLETE.name(),
+        AggregateType.DELIVERY.name(),
+        EventType.DELIVERY_COMPLETE.getKafkaTopic(),
+        delivery.getOrderId(),
+        delivery.getOrderId().toString(),
+        () -> new DeliveryPickUpEvent(delivery.getOrderId())
+    );
 
     delivery.markAsDeliverd();
   }
@@ -174,13 +142,4 @@ public class DeliveryService {
     // 라이더 이전 행정동 위치를 현재 행정동 코드로 업데이트
     redisTemplate.opsForValue().set(riderBeforeAdminCodeKey, currentAdminCode);
   }
-
-  private String toJson(Object obj) {
-    try {
-      return objectMapper.writeValueAsString(obj);
-    } catch (JsonProcessingException e) {
-      throw new ServiceException(JSON_SERIALIZATION_ERROR);
-    }
-  }
-
 }

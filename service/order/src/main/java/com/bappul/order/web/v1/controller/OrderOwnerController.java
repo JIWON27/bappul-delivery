@@ -3,7 +3,6 @@ package com.bappul.order.web.v1.controller;
 import com.bappul.order.application.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,22 +17,16 @@ public class OrderOwnerController {
   private final OrderService orderService;
 
   @PostMapping("/{orderId}/accept")
-  public  ResponseEntity<ApiResponse<Void>> accept(
-      @PathVariable Long storeId,
-      @PathVariable Long orderId,
-      @AuthenticationPrincipal(expression = "claims['uid']") String userId)
+  public  ResponseEntity<ApiResponse<Void>> accept(@PathVariable Long storeId, @PathVariable Long orderId)
   {
-    orderService.accept(storeId, orderId, Long.valueOf(userId));
+    orderService.accept(storeId, orderId);
     return ResponseEntity.ok(ApiResponse.success());
   }
 
   @PostMapping("/{orderId}/reject")
-  public  ResponseEntity<ApiResponse<Void>> reject(
-      @PathVariable Long storeId,
-      @PathVariable Long orderId,
-      @AuthenticationPrincipal(expression = "claims['uid']") String userId)
+  public  ResponseEntity<ApiResponse<Void>> reject(@PathVariable Long storeId, @PathVariable Long orderId)
   {
-    orderService.reject(storeId, orderId, Long.valueOf(userId));
+    orderService.reject(storeId, orderId);
     return ResponseEntity.ok(ApiResponse.success());
   }
 
