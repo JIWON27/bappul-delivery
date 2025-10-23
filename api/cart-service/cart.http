@@ -18,6 +18,7 @@ Content-Type: application/json
 
 {
   "storeId": 1,
+  "storeName" : "분식집",
   "items" : [
     {
       "menuId": 1,
