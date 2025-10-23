@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OptionPerPrice {
+public class OptionPrice {
   Long optionValueId;
   String optionName;
   BigDecimal optionPrice;

@@ -80,4 +80,12 @@ public class CartItem {
     this.unitPriceSnapshot = unitPriceSnapshot;
     this.lineTotalSnapshot = lineTotalSnapshot;
   }
+
+  public void increasementQuantity(int quantity) {
+    this.quantity += quantity;
+  }
+
+  public void updateLineToTalPrice(BigDecimal totalPrice) {
+    this.lineTotalSnapshot = totalPrice;
+  }
 }

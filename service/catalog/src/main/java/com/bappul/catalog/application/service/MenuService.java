@@ -182,7 +182,7 @@ public class MenuService {
           .map(MenuOptionValue::getAdditionalPrice)
           .reduce(BigDecimal.ZERO, BigDecimal::add);
       BigDecimal unitPrice = basePrice.add(optionUnitPrice);
-      BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(cartItemRequest.getQuantity()));
+      BigDecimal lineTotalPrice = unitPrice.multiply(BigDecimal.valueOf(cartItemRequest.getQuantity()));
 
       CartItemCalculateResponse cartItemCalculateResponse = pricingMapper.toCartItemCalculateResponse(
           menu,
@@ -191,11 +191,11 @@ public class MenuService {
           optionUnitPrice,
           unitPrice,
           cartItemRequest.getQuantity(),
-          lineTotal
+          lineTotalPrice
       );
       cartItemCalculateResponses.add(cartItemCalculateResponse);
 
-      totalPrice = totalPrice.add(lineTotal);
+      totalPrice = totalPrice.add(lineTotalPrice);
     }
 
     return pricingMapper.toPricingInternalResponse(store, cartItemCalculateResponses, totalPrice);

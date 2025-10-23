@@ -13,5 +13,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CartRequest {
   Long storeId;
+  String storeName;
   List<CartItemRequest> items;
 }
