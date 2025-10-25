@@ -21,7 +21,7 @@ public interface PricingMapper {
       BigDecimal optionUnitPrice,
       BigDecimal unitPrice,
       int quantity,
-      BigDecimal lineTotal
+      BigDecimal lineTotalPrice
   );
 
   @Mapping(target = "storeId", source = "store.id")

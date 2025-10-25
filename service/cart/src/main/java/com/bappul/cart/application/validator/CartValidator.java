@@ -6,6 +6,7 @@ import static com.bappul.cart.common.exception.ServiceExceptionCode.NOT_FOUND_CA
 import com.bappul.cart.domain.entity.Cart;
 import com.bappul.cart.domain.repository.CartRepository;
 import exception.ServiceException;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,10 @@ public class CartValidator {
     }
 
     Cart cart = getMyCart(userId);
+    if (Objects.isNull(cart.getStoreId())) {
+      return;
+    }
+
     if(!cart.getStoreId().equals(storeId)) {
       throw new ServiceException(CART_STORE_CONFLICT);
     }

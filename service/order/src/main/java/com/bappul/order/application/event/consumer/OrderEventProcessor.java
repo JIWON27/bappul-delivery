@@ -2,6 +2,7 @@ package com.bappul.order.application.event.consumer;
 
 import com.bappul.event.kafka.KafkaEventProcessor;
 import com.bappul.event.outbox.OutboxRecorder;
+import com.bappul.order.application.event.contracts.cart.CartClearEvent;
 import com.bappul.order.application.event.contracts.common.AggregateType;
 import com.bappul.order.application.event.contracts.common.EventType;
 import com.bappul.order.application.event.contracts.coupon.CouponEvent;
@@ -65,6 +66,17 @@ public class OrderEventProcessor {
             .eventType(EventType.COUPON_USED.name())
             .orderId(order.getId())
             .couponId(order.getCouponId())
+            .userId(order.getUserId())
+            .build()
+    );
+
+    outboxRecorder.record(
+        EventType.CART_CLEAR.name(),
+        AggregateType.ORDER.name(),
+        EventType.CART_CLEAR.getKafkaTopic(),
+        order.getId(),
+        order.getId().toString(),
+        () -> CartClearEvent.builder()
             .userId(order.getUserId())
             .build()
     );

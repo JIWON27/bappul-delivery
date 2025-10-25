@@ -27,6 +27,8 @@ dependencies {
     implementation 'org.flywaydb:flyway-mysql'
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
 
+    implementation 'org.springframework.kafka:spring-kafka'
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'
 
@@ -43,4 +45,5 @@ dependencies {
     implementation project(':shared:common-web')
     implementation project(':shared:common-security')
     implementation project(':shared:common-exception')
+    implementation project(':shared:message-relay')
 }

@@ -12,13 +12,13 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public  class CartItemCalculateResponse {
+public class CartItemCalculateResponse {
   Long menuId;
   String menuName;
   BigDecimal basePrice;
-  List<OptionPerPrice> optionPerPrices;
+  List<OptionPrice> optionPrices;
   BigDecimal optionUnitPrice;
   BigDecimal unitPrice;            // base + optionUnitSum
   Integer quantity;
-  BigDecimal lineTotal;            // unitPrice * quantity
+  BigDecimal lineTotalPrice;            // unitPrice * quantity
 }

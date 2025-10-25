@@ -1,18 +1,17 @@
-package com.bappul.cart.adapter.pricing.response;
+package com.bappul.order.application.event.contracts.cart;
 
-import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.jackson.Jacksonized;
 
 @Getter
 @Builder
+@Jacksonized
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OptionPerPrice {
-  Long optionValueId;
-  String optionName;
-  BigDecimal optionPrice;
+public class CartClearEvent {
+  Long userId;
 }
