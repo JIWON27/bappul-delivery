@@ -2,8 +2,6 @@ package com.bappul.cart.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,10 +31,10 @@ public class Cart {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
 
-  @Column(name = "store_id", nullable = false)
+  @Column(name = "store_id")
   Long storeId;
 
-  @Column(name = "store_name", nullable = false)
+  @Column(name = "store_name")
   String storeName;
 
   @Column(name = "user_id", nullable = false)
@@ -44,10 +42,6 @@ public class Cart {
 
   @Column(name = "total_price")
   BigDecimal totalPrice;
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "status", nullable = false)
-  Status status;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
@@ -58,12 +52,16 @@ public class Cart {
   LocalDateTime updatedAt;
 
   @Builder
-  public Cart(Long storeId, String storeName, Long userId, BigDecimal totalPrice, Status status) {
+  public Cart(Long storeId, String storeName, Long userId, BigDecimal totalPrice) {
     this.storeId = storeId;
     this.storeName = storeName;
     this.userId = userId;
     this.totalPrice = totalPrice;
-    this.status = status;
+  }
+
+  public void updateStoreInfo(Long storeId, String storeName) {
+    this.storeId = storeId;
+    this.storeName = storeName;
   }
 
   public void updateTotalPrice(BigDecimal totalPrice) {

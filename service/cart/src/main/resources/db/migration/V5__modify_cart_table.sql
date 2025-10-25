@@ -1,0 +1,8 @@
+ALTER TABLE carts
+MODIFY store_id BIGINT NULL;
+
+ALTER TABLE carts
+MODIFY store_name VARCHAR(50) NULL;
+
+ALTER TABLE carts
+MODIFY total_price DECIMAL(10,0) NULL;

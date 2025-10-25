@@ -1,0 +1,2 @@
+ALTER TABLE carts
+DROP COLUMN status;

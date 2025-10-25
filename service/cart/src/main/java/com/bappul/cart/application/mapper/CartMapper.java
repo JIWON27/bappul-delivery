@@ -5,7 +5,6 @@ import com.bappul.cart.adapter.pricing.response.OptionPrice;
 import com.bappul.cart.domain.entity.Cart;
 import com.bappul.cart.domain.entity.CartItem;
 import com.bappul.cart.domain.entity.CartItemOption;
-import com.bappul.cart.domain.entity.Status;
 import com.bappul.cart.web.v1.request.CartRequest;
 import com.bappul.cart.web.v1.response.CartItemResponse;
 import com.bappul.cart.web.v1.response.CartResponse;
@@ -21,7 +20,7 @@ public interface CartMapper {
   @Mapping(target = "storeId", source = "request.storeId")
   @Mapping(target = "storeName", source = "request.storeName")
   @Mapping(target = "totalPrice", constant = "0")
-  Cart toCart(CartRequest request, Long userId, Status status);
+  Cart toCart(CartRequest request, Long userId);
 
   @Mapping(target = "basePriceSnapshot", source = "cartItemQuote.basePrice")
   @Mapping(target = "optionPriceSnapshot", source = "cartItemQuote.optionUnitPrice")
