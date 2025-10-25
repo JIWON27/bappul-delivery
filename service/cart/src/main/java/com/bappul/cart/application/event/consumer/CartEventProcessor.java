@@ -6,7 +6,6 @@ import com.bappul.cart.domain.entity.Cart;
 import com.bappul.cart.domain.entity.CartItem;
 import com.bappul.cart.domain.repository.CartItemOptionRepository;
 import com.bappul.cart.domain.repository.CartItemRepository;
-import com.bappul.cart.domain.repository.CartRepository;
 import com.bappul.event.kafka.KafkaEventProcessor;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ public class CartEventProcessor {
 
   private final KafkaEventProcessor kafkaEventProcessor;
   private final CartValidator cartValidator;
-  private final CartRepository cartRepository;
   private final CartItemRepository cartItemRepository;
   private final CartItemOptionRepository cartItemOptionRepository;
 
@@ -37,6 +35,6 @@ public class CartEventProcessor {
       cartItemOptionRepository.deleteByCartItem(cartItem);
     }
     cartItemRepository.deleteByCart(cart);
-    cartRepository.delete(cart);
+    cart.updateStoreInfo(null, null);
   }
 }

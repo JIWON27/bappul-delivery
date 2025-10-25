@@ -8,7 +8,6 @@ import com.bappul.cart.application.validator.CartValidator;
 import com.bappul.cart.domain.entity.Cart;
 import com.bappul.cart.domain.entity.CartItem;
 import com.bappul.cart.domain.entity.CartItemOption;
-import com.bappul.cart.domain.entity.Status;
 import com.bappul.cart.domain.repository.CartItemOptionRepository;
 import com.bappul.cart.domain.repository.CartItemRepository;
 import com.bappul.cart.domain.repository.CartRepository;
@@ -46,8 +45,8 @@ public class CartService {
     Long storeId = request.getStoreId();
     cartValidator.validateAddItemSameStore(userId, storeId);
 
-    Cart cart = cartRepository.findByUserIdAndStoreIdAndStatus(userId, storeId, Status.ACTIVE)
-        .orElseGet(() -> cartRepository.save(cartMapper.toCart(request, userId, Status.ACTIVE)));
+    Cart cart = cartRepository.findByUserId(userId)
+        .orElseGet(() -> cartRepository.save(cartMapper.toCart(request, userId)));
     List<CartItem> existingItems = cartItemRepository.findAllByCart(cart);
 
     List<CartItemRequest> toInsert = mergeSameCartItemRequest(request, existingItems);
@@ -135,8 +134,7 @@ public class CartService {
 
         if (requestOptionValueIdSet.equals(savedOptionValueIdSet)) {
           cartItem.increasementQuantity(quantity);
-          cartItem.updateLineToTalPrice(cartItem.getUnitPriceSnapshot().multiply(
-              BigDecimal.valueOf(cartItem.getQuantity())));
+          cartItem.updateLineToTalPrice(cartItem.getUnitPriceSnapshot().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
           merge = true;
           break;
         }
