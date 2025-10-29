@@ -23,7 +23,6 @@ public interface OrderMapper {
   @Mapping(target = "payableTotalPrice", source = "calculateResult.payableTotalPrice")
   Order toOrder(
       UUID orderNo,
-      String merchantUid,
       Long userId,
       OrderRequest request,
       CalculateResult calculateResult,

@@ -48,9 +48,16 @@ public class OrderValidator {
     if (o.getOrderStatus() != OrderStatus.PAID)
       throw new ServiceException(INVALID_ORDER_STATUS);
   }
+
   public void validateReadyable(Order o) {
     if (o.getOrderStatus() != OrderStatus.ACCEPTED)
       throw new ServiceException(INVALID_ORDER_STATUS);
+  }
+
+  public void ensureOwnedBy(Order order, Long userId) {
+    if (!order.getUserId().equals(userId)) {
+      throw new ServiceException(UNAUTHORIZED_ORDER_ACCESS);
+    }
   }
 
 }
