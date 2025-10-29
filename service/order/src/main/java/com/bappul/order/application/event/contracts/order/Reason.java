@@ -1,16 +1,18 @@
 package com.bappul.order.application.event.contracts.order;
 
-import java.math.BigDecimal;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 @Getter
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderCancelEvent {
-  Long orderId;
-  Reason reason;
-  BigDecimal totalRefundPrice; // 환불 가격
+public enum Reason {
+  USER_REQUEST("회원의 취소 요청"),
+  OWNER_REQUEST("점주의 취소 요청")
+  ;
+
+  final String content;
+  Reason(String content) {
+    this.content = content;
+  }
 }
