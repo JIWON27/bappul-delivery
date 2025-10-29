@@ -56,14 +56,8 @@ public class OrderItem {
   @Column(name = "line_discount_price")
   BigDecimal lineDiscountPrice; // 음식에 들어간 할인 가격
 
-  @Column(name = "refund_price")
-  BigDecimal refundPrice; // 환불 금액
-
   @Column(name = "quantity")
   int quantity;
-
-  @Column(name = "refund_quantity")
-  int refundQuantity;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
@@ -74,9 +68,7 @@ public class OrderItem {
   LocalDateTime updatedAt;
 
   @Builder
-  public OrderItem(Order order, Long menuId, String menuName, BigDecimal basePrice,
-      BigDecimal unitPrice, BigDecimal lineTotalPrice, BigDecimal lineDiscountPrice,
-      BigDecimal refundPrice, int quantity, int refundQuantity) {
+  public OrderItem(Order order, Long menuId, String menuName, BigDecimal basePrice, BigDecimal unitPrice, BigDecimal lineTotalPrice, BigDecimal lineDiscountPrice, int quantity) {
     this.order = order;
     this.menuId = menuId;
     this.menuName = menuName;
@@ -84,8 +76,6 @@ public class OrderItem {
     this.unitPrice = unitPrice;
     this.lineTotalPrice = lineTotalPrice;
     this.lineDiscountPrice = lineDiscountPrice;
-    this.refundPrice = refundPrice;
     this.quantity = quantity;
-    this.refundQuantity = refundQuantity;
   }
 }

@@ -41,9 +41,6 @@ public class Order {
   @Column(name = "idempotency_key", unique = true)
   String idempotencyKey;
 
-  @Column(name = "merchant_uid", nullable = false, unique = true)
-  String merchantUid;
-
   @Column(name = "user_id", nullable = false)
   Long userId;
 
@@ -81,12 +78,11 @@ public class Order {
   LocalDateTime updatedAt;
 
   @Builder
-  public Order(UUID orderNo, String idempotencyKey, String merchantUid, Long userId, Long addressId,
+  public Order(UUID orderNo, String idempotencyKey, Long userId, Long addressId,
       Long storeId, Long couponId, OrderStatus orderStatus, BigDecimal orderSubtotalPrice,
       BigDecimal deliveryFeePrice, BigDecimal orderDiscountPrice, BigDecimal payableTotalPrice) {
     this.orderNo = orderNo;
     this.idempotencyKey = idempotencyKey;
-    this.merchantUid = merchantUid;
     this.userId = userId;
     this.addressId = addressId;
     this.storeId = storeId;
@@ -130,7 +126,4 @@ public class Order {
     this.orderStatus = OrderStatus.REFUNDED;
   }
 
-  public void updateMerchantUid(String merchantUid) {
-    this.merchantUid = merchantUid;
-  }
 }
