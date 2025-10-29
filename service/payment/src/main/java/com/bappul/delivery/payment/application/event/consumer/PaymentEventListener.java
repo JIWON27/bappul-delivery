@@ -14,13 +14,8 @@ public class PaymentEventListener {
   private final PaymentEventProcessor eventProcessor;
   private final KafkaEventListener kafkaEventListener;
 
-  @KafkaListener(topics = {"order-cancel"}, groupId = "payment")
+  @KafkaListener(topics = {"order-cancel", "order-reject"}, groupId = "payment")
   public void onOrderCancelEvent(ConsumerRecord<String, String> record, Acknowledgment ack) {
     kafkaEventListener.handle(record, ack, () -> eventProcessor.processOrderCancel(record));
-  }
-
-  @KafkaListener(topics = {"order-reject"}, groupId = "payment")
-  public void onOrderRejectEvent(ConsumerRecord<String, String> record, Acknowledgment ack) {
-    kafkaEventListener.handle(record, ack, () -> eventProcessor.processOrderReject(record));
   }
 }
