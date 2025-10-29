@@ -1,5 +1,9 @@
 package com.bappul.delivery.payment.domain.entity;
 
-public enum PaymentStatus {
-  PAID, REFUNDED, FAILED
+public enum Currency {
+  KRW,
+  USD,
+  EUR,
+  JPY
+  ;
 }

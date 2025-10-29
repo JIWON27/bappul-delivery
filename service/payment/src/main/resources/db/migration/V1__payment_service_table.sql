@@ -1,25 +1,57 @@
 CREATE TABLE payment (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   order_id BIGINT NOT NULL,
-  user_id BIGINT NOT NULL,
-  price DECIMAL(10,0) NOT NULL,
-  merchant_uid VARCHAR(100) NOT NULL,
-  imp_uid VARCHAR(100) NULL,
+  transaction_id VARCHAR(100),
+  merchant_uid VARCHAR(100),
+  payment_id VARCHAR(100) NOT NULL UNIQUE,
+  pg_transaction_id VARCHAR(100) NOT NULL,
+  pg_provider VARCHAR(50) NOT NULL,
+  pay_method VARCHAR(50) NOT NULL,
+  approved_price DECIMAL(10,2) NOT NULL,
+  currency VARCHAR(10) NOT NULL,
   status VARCHAR(30) NOT NULL,
+  receipt_url VARCHAR(500) NULL,
   created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)
+  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  paid_at DATETIME(6) NULL,
+  canceled_at DATETIME(6) NULL
+ );
+
+ CREATE TABLE payment_intent (
+   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+   order_id BIGINT NOT NULL,
+   order_name VARCHAR(100),
+   payment_id VARCHAR(100) NOT NULL,
+   expected_price DECIMAL(10,0) NOT NULL,
+   currency VARCHAR(10) NOT NULL,
+   channel_key VARCHAR(100) NULL,
+   pay_method VARCHAR(50) NOT NULL,
+   status VARCHAR(20) NOT NULL,
+   created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+   updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)
  );
 
 CREATE TABLE outbox_events (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   event_id BINARY(16) NOT NULL,
   event_type VARCHAR(128) NOT NULL,
+  topic VARCHAR(100) NOT NULL,
   aggregate_id BIGINT NULL,
   aggregate_type VARCHAR(30) NULL,
   status VARCHAR(20) NOT NULL,
   partition_key VARCHAR(128) NOT NULL,
   payload TEXT NOT NULL,
   occurred_at DATETIME(6) NULL,
+  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  processed_at DATETIME(6) NULL
+);
+
+CREATE TABLE inbox_events (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  event_id VARCHAR(36) NOT NULL UNIQUE,
+  event_type VARCHAR(128) NOT NULL,
+  payload TEXT NOT NULL,
+  status VARCHAR(20) NOT NULL,
   created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   processed_at DATETIME(6) NULL
 );
