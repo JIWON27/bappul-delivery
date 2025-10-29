@@ -1,8 +1,8 @@
 package com.bappul.delivery.payment.port;
 
+import com.bappul.delivery.payment.adapter.request.PaymentCancelRequest;
 import com.bappul.delivery.payment.adapter.response.PaymentPrepareResponse;
 import com.bappul.delivery.payment.adapter.response.PaymentResponse;
-import com.bappul.delivery.payment.web.v1.request.PaymentCancelRequest;
 import java.math.BigDecimal;
 
 public interface PortOnePort {

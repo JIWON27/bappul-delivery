@@ -1,111 +1,191 @@
 package com.bappul.delivery.payment.application.service;
 
+import static com.bappul.delivery.payment.exception.ServiceExceptionCode.AMOUNT_MISMATCH;
+import static com.bappul.delivery.payment.exception.ServiceExceptionCode.INVALID_ARGUMENT_ORDER_ID;
+import static com.bappul.delivery.payment.exception.ServiceExceptionCode.MERCHANT_UID_MISMATCH;
+import static com.bappul.delivery.payment.exception.ServiceExceptionCode.NOT_PAID_STATUS;
+
+import com.bappul.delivery.payment.adapter.response.PaymentResponse;
 import com.bappul.delivery.payment.application.event.contracts.common.AggregateType;
 import com.bappul.delivery.payment.application.event.contracts.common.EventType;
 import com.bappul.delivery.payment.application.event.contracts.payment.PaymentFailEvent;
 import com.bappul.delivery.payment.application.event.contracts.payment.PaymentSuccessEvent;
+import com.bappul.delivery.payment.application.mapper.PaymentMapper;
 import com.bappul.delivery.payment.application.validator.PaymentValidator;
-import com.bappul.delivery.payment.domain.entity.Payment;
-import com.bappul.delivery.payment.domain.entity.PaymentStatus;
+import com.bappul.delivery.payment.domain.entity.PaymentIntent;
+import com.bappul.delivery.payment.domain.repository.PaymentIntentRepository;
 import com.bappul.delivery.payment.domain.repository.PaymentRepository;
-import com.bappul.delivery.payment.web.v1.request.PaymentCreateRequest;
-import com.bappul.delivery.payment.web.v1.request.PaymentValidationRequest;
+import com.bappul.delivery.payment.port.PortOnePort;
+import com.bappul.delivery.payment.web.v1.request.PaymentIntentRequest;
+import com.bappul.delivery.payment.web.v1.request.PaymentVerifyRequest;
+import com.bappul.delivery.payment.web.v1.request.PaymentWebhookRequest;
+import com.bappul.delivery.payment.web.v1.response.PaymentIntentResponse;
 import com.bappul.event.outbox.OutboxRecorder;
-import com.siot.IamportRestClient.IamportClient;
+import exception.ServiceException;
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
 
-  private final IamportClient iamportClient;
+  private final PortOnePort portOnePort;
 
   private final OutboxRecorder outboxRecorder;
   private final PaymentRepository paymentRepository;
+  private final PaymentIntentRepository paymentIntentRepository;
 
+  private final PaymentMapper paymentMapper;
   private final PaymentValidator paymentValidator;
-  private final MerchantUidGenerator merchantUidGenerator;
+  private final ChannelKeyProperties channelKeyProperties;
+  private final Clock clock;
+
+  @Value("${portone.storeId}")
+  private String storeId;
 
   @Transactional
-  public String fakePreparePayment(PaymentCreateRequest request, Long userId) {
-    String merchantUid = merchantUidGenerator.generate(request.getOrderId());
-    Payment payment = Payment.builder()
-        .orderId(request.getOrderId())
-        .userId(userId)
-        .status(PaymentStatus.PENDING)
-        .impUid(null)
-        .merchantUid(merchantUid)
-        .price(request.getPayablePrice())
-        .build();
+  public void createIntent(PaymentIntentRequest request) {
+    String paymentId = paymentIdGenerate(request.getOrderId());
+    String channelKey = channelKeyProperties.getChannels().get(request.getPgProvider());
 
-    paymentRepository.save(payment);
-    return merchantUid;
+    PaymentIntent paymentIntent = paymentIntentRepository.save(paymentMapper.toPaymentIntent(request, paymentId, channelKey));
+    PaymentIntent savedPaymentIntent = paymentIntentRepository.save(paymentIntent);
+    savedPaymentIntent.updatePaymentId(paymentId);
+
+    preparePayment(paymentIntent.getExpectedPrice(), paymentId);
+  }
+
+  @Transactional(readOnly = true)
+  public PaymentIntentResponse getPaymentIntent(Long orderId) {
+    PaymentIntent paymentIntent = paymentValidator.getPaymentIntentByOrderId(orderId);
+    return paymentMapper.toPaymentIntentResponse(paymentIntent, storeId);
   }
 
   @Transactional
-  public void fakeValidationPayment(PaymentValidationRequest request, String mode) {
-    String impUid = request.getImpUid();
-    String merchantUid = request.getMerchantUid();
+  public void paymentVerify(PaymentVerifyRequest request) {
+    String paymentId = request.getPaymentId();
 
-    Payment payment = paymentValidator.getPaymentByMerchantUid(merchantUid);
+    PaymentIntent paymentIntent = paymentValidator.getPaymentIntentByPaymentId(paymentId);
 
-    if (payment.getStatus() == PaymentStatus.PAID ||
-        payment.getStatus() == PaymentStatus.FAIL ||
-        payment.getStatus() == PaymentStatus.REFUNDED) {
-      return; // 또는 예외
-    }
+    try {
+      PaymentResponse paymentResponse = portOnePort.getPayment(paymentId);
 
-    // TODO 테스트 완료 시 해당 메서드 삭제 예정
-    // 결제 성공 테스트용
-    if (mode.equals("SUCCESS")) {
-      payment.markAsPaid();
-      payment.updateImpUid(impUid);
+      if (paymentRepository.existsByPaymentId(paymentResponse.getId())) {
+        return;
+      }
+
+      validatePayment(paymentResponse, paymentIntent);
+
+      com.bappul.delivery.payment.domain.entity.Payment payment = paymentMapper.toPayment(paymentIntent, paymentResponse, LocalDateTime.ofInstant(paymentResponse.getPaidAt(), clock.getZone()));
+      try {
+        paymentRepository.save(payment);
+      } catch (DataIntegrityViolationException dup) {
+        log.info("duplicate paymentId={}, skip insert", paymentId);
+        return;
+      }
 
       outboxRecorder.record(
           EventType.PAYMENT_SUCCESS.name(),
           AggregateType.PAYMENT.name(),
           EventType.PAYMENT_SUCCESS.getKafkaTopic(),
-          payment.getOrderId(),
-          payment.getOrderId().toString(),
-          () ->  PaymentSuccessEvent.builder()
-              .merchantUid(merchantUid)
-              .orderId(payment.getOrderId())
-              .build()
+          paymentIntent.getOrderId(),
+          paymentIntent.getOrderId().toString(),
+          () -> new PaymentSuccessEvent(paymentIntent.getOrderId(), paymentIntent.getPaymentId())
       );
-    }
-    // 결제 실패 테스트용
-    else if (mode.equals("FAIL")) {
-      payment.markAsFail();
-      outboxRecorder.record(
+    } catch (ServiceException e) {
+      outboxRecorder.recordFail(
           EventType.PAYMENT_FAIL.name(),
           AggregateType.PAYMENT.name(),
           EventType.PAYMENT_FAIL.getKafkaTopic(),
-          payment.getOrderId(),
-          payment.getOrderId().toString(),
-          () ->  PaymentFailEvent.builder()
-              .merchantUid(merchantUid)
-              .orderId(payment.getOrderId())
-              .build()
+          paymentIntent.getOrderId(),
+          paymentIntent.getOrderId().toString(),
+          () -> new PaymentFailEvent(paymentIntent.getOrderId(), paymentIntent.getPaymentId())
       );
+      throw e;
     }
-    // 결제 취소
-    else if (mode.equals("CANCEL")) {
-      if (payment.getStatus() == PaymentStatus.PENDING) {
-        payment.markAsFail();
+  }
+
+  @Transactional
+  public void processWebhook(PaymentWebhookRequest request) {
+    String type = request.getType(); // 이벤트 타입
+    String paymentId = request.getData().getPaymentId(); // 결제 ID
+
+    if (paymentRepository.existsByPaymentId(paymentId)) {
+      return;
+    }
+
+    PaymentIntent paymentIntent = paymentValidator.getPaymentIntentByPaymentId(paymentId);
+    PaymentResponse paymentResponse = portOnePort.getPayment(paymentId);
+    validatePayment(paymentResponse, paymentIntent);
+    com.bappul.delivery.payment.domain.entity.Payment payment = paymentMapper.toPayment(paymentIntent, paymentResponse, LocalDateTime.ofInstant(paymentResponse.getPaidAt(), clock.getZone()));
+    try {
+      paymentRepository.save(payment);
+    } catch (DataIntegrityViolationException dup) {
+      log.info("duplicate paymentId={}, skip insert", paymentId);
+      return;
+    }
+
+    switch (type) {
+      case "Transaction.Paid":
         outboxRecorder.record(
+            EventType.PAYMENT_SUCCESS.name(),
+            AggregateType.PAYMENT.name(),
+            EventType.PAYMENT_SUCCESS.getKafkaTopic(),
+            paymentIntent.getOrderId(),
+            paymentIntent.getOrderId().toString(),
+            () -> new PaymentSuccessEvent(paymentIntent.getOrderId(), paymentIntent.getPaymentId())
+        );
+        break;
+      case "Transaction.Cancelled":
+        outboxRecorder.recordFail(
             EventType.PAYMENT_FAIL.name(),
             AggregateType.PAYMENT.name(),
             EventType.PAYMENT_FAIL.getKafkaTopic(),
-            payment.getOrderId(),
-            payment.getOrderId().toString(),
-            () ->  PaymentFailEvent.builder()
-                .merchantUid(merchantUid)
-                .orderId(payment.getOrderId())
-                .build()
+            paymentIntent.getOrderId(),
+            paymentIntent.getOrderId().toString(),
+            () -> new PaymentFailEvent(paymentIntent.getOrderId(), paymentIntent.getPaymentId())
         );
-      }
+        break;
+      default:
+        log.warn("알 수 없는 이벤트 타입: {}", type);
     }
+  }
+
+  private void preparePayment(BigDecimal expectedPrice, String paymentId){
+    portOnePort.preRegister(expectedPrice, paymentId);
+  }
+
+  private void validatePayment(PaymentResponse paymentResponse, PaymentIntent paymentIntent) {
+    PaymentResponse response = Objects.requireNonNull(paymentResponse);
+
+    if(!"PAID".equalsIgnoreCase(response.getStatus().name())) {
+      throw new ServiceException(NOT_PAID_STATUS);
+    }
+
+    if(!Objects.equals(paymentIntent.getPaymentId(), paymentIntent.getPaymentId())) {
+      throw new ServiceException(MERCHANT_UID_MISMATCH);
+    }
+
+    if(paymentIntent.getExpectedPrice().compareTo(response.getAmount().getPaid()) != 0) {
+      throw new ServiceException(AMOUNT_MISMATCH);
+    }
+  }
+
+  private String paymentIdGenerate(Long orderId) {
+    if (Objects.isNull(orderId) || orderId <= 0) {
+      throw new ServiceException(INVALID_ARGUMENT_ORDER_ID);
+    }
+    String uid = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+    return "order_" + orderId + "_" + uid;
   }
 }
