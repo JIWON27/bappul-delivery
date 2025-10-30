@@ -1,6 +1,6 @@
 package com.bappul.order.adapter;
 
-import com.bappul.order.adapter.request.PaymentCreateRequest;
+import com.bappul.order.adapter.request.PaymentIntentRequest;
 import com.bappul.order.config.OpenFeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
     configuration = OpenFeignConfig.class
 )
 public interface PaymentClient {
-
-  @PostMapping("/payments/fake/prepare")
-  String fakePreparePayment(@RequestBody PaymentCreateRequest request);
-
+  @PostMapping("/payments/intents")
+  String createPaymentIntent(@RequestBody PaymentIntentRequest request);
 }

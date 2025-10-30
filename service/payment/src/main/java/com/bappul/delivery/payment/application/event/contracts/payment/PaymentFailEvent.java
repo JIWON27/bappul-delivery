@@ -12,5 +12,5 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PaymentFailEvent {
   Long orderId;
-  String merchantUid;
+  String paymentId;
 }

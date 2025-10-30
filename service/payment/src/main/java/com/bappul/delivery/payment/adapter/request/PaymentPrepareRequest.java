@@ -1,5 +1,6 @@
-package com.bappul.order.adapter.request;
+package com.bappul.delivery.payment.adapter.request;
 
+import com.bappul.delivery.payment.domain.entity.Currency;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -9,7 +10,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PaymentCreateRequest {
-  Long orderId;
-  BigDecimal payablePrice;
+public class PaymentPrepareRequest {
+  BigDecimal totalAmount;
+  Currency currency;
 }

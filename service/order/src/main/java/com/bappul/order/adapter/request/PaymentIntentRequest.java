@@ -1,4 +1,4 @@
-package com.bappul.delivery.payment.web.v1.request;
+package com.bappul.order.adapter.request;
 
 import java.math.BigDecimal;
 import lombok.AccessLevel;
@@ -9,7 +9,10 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PaymentCreateRequest {
+public class PaymentIntentRequest {
   Long orderId;
-  BigDecimal payablePrice;
+  String orderName;
+  PgProvider pgProvider;
+  PayMethod payMethod;
+  BigDecimal expectedPrice;
 }

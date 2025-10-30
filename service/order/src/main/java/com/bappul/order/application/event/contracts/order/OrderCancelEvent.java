@@ -1,14 +1,16 @@
 package com.bappul.order.application.event.contracts.order;
 
+import java.math.BigDecimal;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 @Getter
-@AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderCancelEvent {
   Long orderId;
-  Long userId;
+  Reason reason;
+  BigDecimal totalRefundPrice; // 환불 가격
 }

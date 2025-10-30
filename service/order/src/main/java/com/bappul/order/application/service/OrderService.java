@@ -8,7 +8,7 @@ import com.bappul.order.application.event.contracts.common.EventType;
 import com.bappul.order.application.event.contracts.order.OrderAcceptEvent;
 import com.bappul.order.application.event.contracts.order.OrderCancelEvent;
 import com.bappul.order.application.event.contracts.order.OrderReadyEvent;
-import com.bappul.order.application.event.contracts.order.OrderRejectEvent;
+import com.bappul.order.application.event.contracts.order.Reason;
 import com.bappul.order.application.mapper.OrderMapper;
 import com.bappul.order.application.validator.OrderValidator;
 import com.bappul.order.domain.entitiy.Order;
@@ -61,15 +61,16 @@ public class OrderService {
 
     Order order = orderMapper.toOrder(
         UUID.randomUUID(),
-        null,
         userId,
         request,
         calculateResult,
         OrderStatus.CREATED);
     orderRepository.save(order);
 
-    String merchantUid = paymentCommandPort.fakePreparePayment(order.getId(), payablePrice);
-    order.updateMerchantUid(merchantUid);
+    paymentCommandPort.createPaymentIntent(
+        order.getId(),
+        payablePrice,
+        request.getPgProvider(), request.getPayMethod());
 
     List<OrderItem> orderItems = new ArrayList<>();
     List<OrderItemOption> orderItemOptions = new ArrayList<>();
@@ -95,6 +96,12 @@ public class OrderService {
   @Transactional
   public void cancel(Long orderId, Long userId) {
     Order order = orderValidator.getOrderById(orderId);
+    orderValidator.ensureOwnedBy(order, userId);
+
+    if (order.getOrderStatus() == OrderStatus.ACCEPTED) {
+      return;
+    }
+
     order.markAsCanceled();
 
     outboxRecorder.record(
@@ -103,7 +110,11 @@ public class OrderService {
         EventType.ORDER_CANCEL.getKafkaTopic(),
         order.getId(),
         order.getId().toString(),
-        () -> new OrderCancelEvent(orderId, userId)
+        () -> OrderCancelEvent.builder()
+            .orderId(orderId)
+            .reason(Reason.USER_REQUEST)
+            .totalRefundPrice(order.getPayableTotalPrice())
+            .build()
     );
   }
 
@@ -133,8 +144,8 @@ public class OrderService {
   public void reject(Long storeId, Long orderId) {
     Order order = orderValidator.getOrderById(orderId);
     orderValidator.validateBelongsToStore(order.getStoreId(), storeId);
-
     orderValidator.validateRejectable(order);
+
     order.markAsRejected();
 
     outboxRecorder.record(
@@ -143,7 +154,11 @@ public class OrderService {
         EventType.ORDER_REJECTED.getKafkaTopic(),
         order.getId(),
         order.getId().toString(),
-        () -> new OrderRejectEvent(orderId, order.getUserId())
+        () -> OrderCancelEvent.builder()
+            .orderId(orderId)
+            .reason(Reason.OWNER_REQUEST)
+            .totalRefundPrice(order.getPayableTotalPrice())
+            .build()
     );
   }
 

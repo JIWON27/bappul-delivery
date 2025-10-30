@@ -35,21 +35,39 @@ public class Payment {
   @Column(name = "order_id", nullable = false)
   Long orderId;
 
-  @Column(name = "user_id", nullable = false)
-  Long userId;
-
-  @Column(name = "price", nullable = false)
-  BigDecimal price;
-
-  @Column(name = "imp_uid", nullable = false)
-  String impUid;
+  @Column(name = "payment_id", nullable = false)
+  String paymentId;
 
   @Column(name = "merchant_uid", nullable = false)
   String merchantUid;
 
+  @Column(name = "transaction_id", nullable = false)
+  String transactionId;
+
+  @Column(name = "pg_transaction_id", nullable = false)
+  String pgTransactionId;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "pg_provider", nullable = false)
+  PgProvider pgProvider;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "pay_method", nullable = false)
+  PayMethod payMethod;
+
+  @Column(name = "approved_price", nullable = false)
+  BigDecimal approvedPrice;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "currency", nullable = false)
+  Currency currency;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
   PaymentStatus status;
+
+  @Column(name = "receipt_url")
+  String receiptUrl;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
@@ -59,23 +77,28 @@ public class Payment {
   @Column(name = "updated_at")
   LocalDateTime updatedAt;
 
+  @Column(name = "paid_at")
+  LocalDateTime paidAt;
+
+  @Column(name = "canceled_at")
+  LocalDateTime canceledAt;
+
   @Builder
-  public Payment(Long orderId, Long userId, BigDecimal price, String impUid, String merchantUid,
-      PaymentStatus status) {
+  public Payment(Long orderId, String paymentId, String merchantUid, String transactionId,
+      String pgTransactionId, PgProvider pgProvider, PayMethod payMethod, BigDecimal approvedPrice,
+      Currency currency, PaymentStatus status, String receiptUrl, LocalDateTime paidAt) {
     this.orderId = orderId;
-    this.userId = userId;
-    this.price = price;
-    this.impUid = impUid;
+    this.paymentId = paymentId;
     this.merchantUid = merchantUid;
+    this.transactionId = transactionId;
+    this.pgTransactionId = pgTransactionId;
+    this.pgProvider = pgProvider;
+    this.payMethod = payMethod;
+    this.approvedPrice = approvedPrice;
+    this.currency = currency;
     this.status = status;
-  }
-
-  public void updateImpUid(String impUid) {
-    this.impUid = impUid;
-  }
-
-  public void markAsRefunded() {
-    this.status = PaymentStatus.REFUNDED;
+    this.receiptUrl = receiptUrl;
+    this.paidAt = paidAt;
   }
 
   public void markAsPaid() {
@@ -83,6 +106,10 @@ public class Payment {
   }
 
   public void markAsFail() {
-    this.status = PaymentStatus.FAIL;
+    this.status = PaymentStatus.FAILED;
+  }
+
+  public void markAsRefunded() {
+    this.status = PaymentStatus.REFUNDED;
   }
 }
