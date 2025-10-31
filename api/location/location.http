@@ -1,0 +1,4 @@
+
+### 특정 도로명 주소에 대한 주소 정보 조
+GET http://127.0.0.1:9999/api/v1/location?query=<도로명 주소>&size=1&analyze_type=exact
+Authorization: {{token}}
