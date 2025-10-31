@@ -1,0 +1,8 @@
+ALTER TABLE address
+ADD COLUMN jibun_address VARCHAR(255) NULL;
+
+ALTER TABLE address
+ADD COLUMN haengjeong_code VARCHAR(10) NOT NULL;
+
+ALTER TABLE address
+ADD COLUMN beopjeongCode VARCHAR(10) NOT NULL;

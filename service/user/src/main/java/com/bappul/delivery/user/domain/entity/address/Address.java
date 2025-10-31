@@ -44,14 +44,23 @@ public class Address {
   @Column(name = "alias")
   String alias;
 
-  @Column(nullable = false)
-  String zipcode;
-
   @Column(name = "road_address", nullable = false)
   String roadAddress;
 
-  @Column(name = "detail_address")
+  @Column(name = "detail_address", nullable = false)
   String detailAddress;
+
+  @Column(name = "zipcode", nullable = false)
+  String zipcode;
+
+  @Column(name = "jibun_address")
+  String jibunAddress;
+
+  @Column(name = "haengjeong_code", nullable = false)
+  String haengjeongCode;
+
+  @Column(name = "beopjeongCode", nullable = false)
+  String beopjeongCode;
 
   @Column(name = "is_default", nullable = false)
   Boolean isDefault;
@@ -65,14 +74,21 @@ public class Address {
   LocalDateTime updatedAt;
 
   @Builder
-  public Address(User user, String alias, String zipcode, String roadAddress, String detailAddress, Boolean isDefault) {
+  public Address(User user, String alias, String roadAddress, String detailAddress, String zipcode,
+      String jibunAddress, String haengjeongCode, String beopjeongCode, Boolean isDefault) {
     this.user = user;
     this.alias = alias;
-    this.zipcode = zipcode;
     this.roadAddress = roadAddress;
     this.detailAddress = detailAddress;
+    this.zipcode = zipcode;
+    this.jibunAddress = jibunAddress;
+    this.haengjeongCode = haengjeongCode;
+    this.beopjeongCode = beopjeongCode;
     this.isDefault = isDefault;
   }
+
+  @Builder
+
 
   public void updateIsDefault(boolean isDefault){
     this.isDefault = isDefault;
