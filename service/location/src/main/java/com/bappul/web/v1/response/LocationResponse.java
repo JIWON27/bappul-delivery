@@ -1,8 +1,11 @@
 package com.bappul.web.v1.response;
 
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.experimental.FieldDefaults;
 
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class LocationResponse {
   String roadAddress; // 전체 도로명 주소
   String jibunAddress; // 전체 지번 주소

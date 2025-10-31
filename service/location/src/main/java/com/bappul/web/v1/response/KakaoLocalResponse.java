@@ -4,13 +4,11 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
 @Getter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@ToString
 public class KakaoLocalResponse {
   Meta meta;
   List<Document> documents;
@@ -18,7 +16,6 @@ public class KakaoLocalResponse {
   @Getter
   @Builder
   @FieldDefaults(level = AccessLevel.PRIVATE)
-  @ToString
   public static class Meta {
     Integer total_count;
     Integer pageable_count;
@@ -28,7 +25,6 @@ public class KakaoLocalResponse {
   @Getter
   @Builder
   @FieldDefaults(level = AccessLevel.PRIVATE)
-  @ToString
   public static class Document {
     String address_name;
     String y;                 // 위도 (문자열로 옴)
@@ -41,7 +37,6 @@ public class KakaoLocalResponse {
   @Getter
   @Builder
   @FieldDefaults(level = AccessLevel.PRIVATE)
-  @ToString
   public static class Address {
     String address_name;
     String region_1depth_name;
@@ -60,7 +55,6 @@ public class KakaoLocalResponse {
   @Getter
   @Builder
   @FieldDefaults(level = AccessLevel.PRIVATE)
-  @ToString
   public static class RoadAddress {
     String address_name;
     String region_1depth_name;
