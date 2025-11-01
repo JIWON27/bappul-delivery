@@ -70,7 +70,7 @@ Content-Type: multipart/form-data; boundary=BOUNDARY123
 Content-Disposition: form-data; name="thumbnail"; filename="chicken.jpg"
 Content-Type: image/jpeg
 
-< /Users/minjiwon/Desktop/bappul/api/catalog-service/chicken.jpeg
+< /Users/minjiwon/Desktop/bappul/api/catalog/chicken.jpeg
 --BOUNDARY123--
 
 ### 메뉴 이미지 등록 API
@@ -82,7 +82,7 @@ Content-Type: multipart/form-data; boundary=BOUNDARY123
 Content-Disposition: form-data; name="images"; filename="chicken.jpg"
 Content-Type: image/jpeg
 
-< /Users/minjiwon/Desktop/bappul/api/catalog-service/chicken.jpeg
+< /Users/minjiwon/Desktop/bappul/api/catalog/chicken.jpeg
 --BOUNDARY123--
 
 ### 회원 로그인

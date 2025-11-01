@@ -17,7 +17,7 @@ Authorization: {{token}}
 Content-Type: application/json
 
 {
-  "name": "기타"
+  "name": "피자"
 }
 
 ### 카테고리 조회
