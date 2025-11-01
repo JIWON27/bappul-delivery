@@ -10,8 +10,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AddressResponse {
   String alias;
-  String zipcode;
+  String jibunAddress;
   String roadAddress;
   String detailAddress;
+  String zipcode;
   Boolean isDefault;
 }

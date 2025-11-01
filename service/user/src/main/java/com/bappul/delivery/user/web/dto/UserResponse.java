@@ -12,7 +12,9 @@ import lombok.experimental.FieldDefaults;
 public class UserResponse {
   Long id;
   UUID uuid;
+  String name;
   String email;
   String nickname;
+  String phone;
   String imageUrl;
 }

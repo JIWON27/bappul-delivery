@@ -59,7 +59,7 @@ public class Address {
   @Column(name = "haengjeong_code", nullable = false)
   String haengjeongCode;
 
-  @Column(name = "beopjeongCode", nullable = false)
+  @Column(name = "beopjeong_code", nullable = false)
   String beopjeongCode;
 
   @Column(name = "is_default", nullable = false)
