@@ -1,5 +1,6 @@
 package com.bappul.catalog.application.service;
 
+import com.bappul.catalog.adapter.response.LocationResponse;
 import com.bappul.catalog.application.mapper.StoreMapper;
 import com.bappul.catalog.application.validator.CategoryValidator;
 import com.bappul.catalog.application.validator.MenuValidator;
@@ -13,7 +14,9 @@ import com.bappul.catalog.domain.repository.MenuOptionGroupRepository;
 import com.bappul.catalog.domain.repository.MenuOptionValueRepository;
 import com.bappul.catalog.domain.repository.MenuRepository;
 import com.bappul.catalog.domain.repository.StoreRepository;
+import com.bappul.catalog.port.LocationPort;
 import com.bappul.catalog.web.v1.request.store.StoreRequest;
+import com.bappul.catalog.web.v1.response.store.StoreLocationResponse;
 import com.bappul.catalog.web.v1.response.store.StoreResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -34,11 +37,13 @@ public class StoreService {
   private final CategoryValidator categoryValidator;
 
   private final StoreMapper storeMapper;
+  private final LocationPort locationPort;
 
   @Transactional
   public void enroll(StoreRequest request){
     Category category = categoryValidator.getCategoryById(request.getCategoryId());
-    Store store = storeMapper.toStore(request, category);
+    LocationResponse location = locationPort.getLocation(request.getRoadAddress());
+    Store store = storeMapper.toStore(request, category, location);
     storeRepository.save(store);
   }
 
@@ -46,6 +51,12 @@ public class StoreService {
   public StoreResponse getStore(Long storeId){
     Store store = storeValidator.getStore(storeId);
     return storeMapper.toResponse(store);
+  }
+
+  @Transactional(readOnly = true)
+  public StoreLocationResponse getStoreLocation(Long storeId){
+    Store store = storeValidator.getStore(storeId);
+    return storeMapper.toStoreLocationResponse(store);
   }
 
   @Transactional

@@ -49,11 +49,32 @@ public class Store {
   @Column(name = "name", nullable = false, length = 100)
   String name;
 
-  @Column(name = "phone_number", nullable = false, length = 20)
-  String phoneNumber;
+  @Column(name = "phone", nullable = false, length = 20)
+  String phone;
 
-  @Column(name = "address",  nullable = false, length = 100)
-  String address;
+  @Column(name = "road_address", nullable = false)
+  String roadAddress;
+
+  @Column(name = "detail_address", nullable = false)
+  String detailAddress;
+
+  @Column(name = "zipcode", nullable = false)
+  String zipcode;
+
+  @Column(name = "jibun_address")
+  String jibunAddress;
+
+  @Column(name = "haengjeong_code", nullable = false)
+  String haengjeongCode;
+
+  @Column(name = "beopjeong_Code", nullable = false)
+  String beopjeongCode;
+
+  @Column(name = "longitude", nullable = false)
+  Double longitude;
+
+  @Column(name = "latitude", nullable = false)
+  Double latitude;
 
   @Column(name = "introduction",  nullable = false, length = 255)
   String introduction;
@@ -79,13 +100,22 @@ public class Store {
   LocalDateTime deletedAt;
 
   @Builder
-  public Store(Long userId, Category category, String name, String phoneNumber, String address,
-      String introduction, BigDecimal minOrderPrice, BigDecimal deliveryFee, Boolean openStatus) {
+  public Store(Long userId, Category category, String name, String phone, String roadAddress,
+      String detailAddress, String zipcode, String jibunAddress, String haengjeongCode,
+      String beopjeongCode, Double longitude, Double latitude, String introduction,
+      BigDecimal minOrderPrice, BigDecimal deliveryFee, Boolean openStatus) {
     this.userId = userId;
     this.category = category;
     this.name = name;
-    this.phoneNumber = phoneNumber;
-    this.address = address;
+    this.phone = phone;
+    this.roadAddress = roadAddress;
+    this.detailAddress = detailAddress;
+    this.zipcode = zipcode;
+    this.jibunAddress = jibunAddress;
+    this.haengjeongCode = haengjeongCode;
+    this.beopjeongCode = beopjeongCode;
+    this.longitude = longitude;
+    this.latitude = latitude;
     this.introduction = introduction;
     this.minOrderPrice = minOrderPrice;
     this.deliveryFee = deliveryFee;
