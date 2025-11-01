@@ -43,10 +43,13 @@ public class User {
   @Column(name = "uuid", nullable = false)
   UUID uuid;
 
-  @Column(nullable = false, unique = true)
+  @Column(name = "name", nullable = false)
+  String name;
+
+  @Column(name = "email", nullable = false)
   String email;
 
-  @Column(name = "nickname")
+  @Column(name = "nickname", nullable = false)
   String nickname;
 
   @Column(name = "password", nullable = false)
@@ -55,14 +58,14 @@ public class User {
   @Column(name = "phone")
   String phone;
 
-  @Column(nullable = false)
+  @Column(name = "gender", nullable = false)
   @Enumerated(EnumType.STRING)
   Gender gender;
 
   @Column(name = "birth_date")
   LocalDate birthDate;
 
-  @Column(nullable = false)
+  @Column(name = "role", nullable = false)
   @Enumerated(EnumType.STRING)
   Role role;
 
@@ -71,12 +74,6 @@ public class User {
 
   @Column(name = "is_active")
   Boolean isActive;
-
-  @Column(name = "last_login_at")
-  LocalDateTime lastLoginAt;
-
-  @Column(name = "last_password_change_at")
-  LocalDateTime lastPasswordChangeAt;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
@@ -90,9 +87,10 @@ public class User {
   LocalDateTime withdrawnAt;
 
   @Builder
-  public User(UUID uuid, String email, String nickname, String password, String phone,
+  public User(UUID uuid, String name, String email, String nickname, String password, String phone,
       Gender gender, LocalDate birthDate, Role role, Boolean isVerified, Boolean isActive) {
     this.uuid = uuid;
+    this.name = name;
     this.email = email;
     this.nickname = nickname;
     this.password = password;

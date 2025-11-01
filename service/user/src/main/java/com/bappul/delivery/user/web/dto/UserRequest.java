@@ -19,6 +19,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserRequest {
 
+  @NotBlank(message = "이름은 필수입니다.")
+  String name;
+
   @NotBlank(message = "이메일은 필수입니다.")
   @Email(message = "이메일 형식이 올바르지 않습니다.")
   String email;

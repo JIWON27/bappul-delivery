@@ -1,5 +1,6 @@
 package com.bappul.catalog.web.v1.response.store;
 
+import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,10 +10,13 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class StoreResponse {
-  Long ownerId;
+  Long storeId;
+  String storeName;
   String category;
-  String name;
-  String phoneNumber;
-  String address;
   String introduction;
+  String roadAddress;
+  String detailAddress;
+  BigDecimal minOrderPrice;
+  BigDecimal deliveryFee;
+  Boolean openStatus;
 }

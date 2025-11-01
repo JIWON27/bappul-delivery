@@ -1,11 +1,13 @@
 package com.bappul.delivery.user.application.service;
 
+import com.bappul.delivery.user.adapter.response.LocationResponse;
 import com.bappul.delivery.user.application.mapper.AddressMapper;
 import com.bappul.delivery.user.common.validator.AddressValidator;
 import com.bappul.delivery.user.common.validator.UserValidator;
 import com.bappul.delivery.user.domain.entity.address.Address;
 import com.bappul.delivery.user.domain.entity.user.User;
 import com.bappul.delivery.user.domain.repository.AddressRepository;
+import com.bappul.delivery.user.port.LocationPort;
 import com.bappul.delivery.user.web.dto.AddressRequest;
 import com.bappul.delivery.user.web.dto.AddressResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +18,18 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AddressService {
 
-  private final AddressMapper addressMapper;
-  private final UserValidator userValidator;
-  private final AddressValidator addressValidator;
   private final AddressRepository addressRepository;
 
-  @Transactional
-  public AddressResponse registerAddress(AddressRequest request, Long userId) {
-    User user = userValidator.getById(userId);
+  private final UserValidator userValidator;
+  private final AddressValidator addressValidator;
+  private final AddressMapper addressMapper;
+  private final LocationPort locationPort;
 
-    Address address = request.toEntity(user);
+  @Transactional
+  public AddressResponse enrollAddress(AddressRequest request, Long userId) {
+    User user = userValidator.getById(userId);
+    LocationResponse location = locationPort.getLocation(request.getRoadAddress());
+    Address address = addressMapper.toAddress(user, request, location);
     Address savedAddress = addressRepository.save(address);
     return addressMapper.toAddressResponse(savedAddress);
   }

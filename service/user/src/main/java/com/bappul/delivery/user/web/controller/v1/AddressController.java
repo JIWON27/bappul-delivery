@@ -20,18 +20,13 @@ import response.ApiResponse;
 @RequestMapping("/api/v1/address")
 public class AddressController {
 
-  /**
-   * 속도 조절을 위해서 Address는 최소한의 기능만 구현하였습니다.
-   * 나머지 기능들은 집중하고 싶은 부분 기능 구현이 마무리된 후 구현하겠습니다.
-   */
-
   private final AddressService addressService;
 
   @PostMapping
-  public ResponseEntity<ApiResponse<AddressResponse>> enroll(
+  public ResponseEntity<ApiResponse<AddressResponse>> enrollAddress(
       @Valid @RequestBody AddressRequest addressRequest,
       @AuthenticationPrincipal(expression = "claims['uid']") String userId) {
-    AddressResponse response = addressService.registerAddress(addressRequest, Long.valueOf(userId));
+    AddressResponse response = addressService.enrollAddress(addressRequest, Long.valueOf(userId));
     return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
   }
 

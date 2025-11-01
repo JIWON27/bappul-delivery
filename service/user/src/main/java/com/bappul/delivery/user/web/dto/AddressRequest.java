@@ -1,7 +1,5 @@
 package com.bappul.delivery.user.web.dto;
 
-import com.bappul.delivery.user.domain.entity.address.Address;
-import com.bappul.delivery.user.domain.entity.user.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,19 +10,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AddressRequest {
   String alias;
-  String zipcode;
   String roadAddress;
   String detailAddress;
+  String zipcode;
   Boolean isDefault;
-
-  public Address toEntity(User user){
-    return Address.builder()
-        .user(user)
-        .alias(alias)
-        .zipcode(zipcode)
-        .roadAddress(roadAddress)
-        .detailAddress(detailAddress)
-        .isDefault(isDefault)
-        .build();
-  }
 }

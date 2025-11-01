@@ -16,7 +16,7 @@ GET http://localhost:8000/api/v1/stores/search
 Content-Type: application/json
 
 ### 특정 가게 메뉴 목록 조회
-GET http://localhost:8000/api/v1/stores/1
+GET http://localhost:8000/api/v1/stores/1/menus
 
 ### 가게 등록
 POST http://localhost:8000/api/v1/admin/stores
@@ -24,12 +24,13 @@ Authorization: {{token}}
 Content-Type: application/json
 
 {
-  "categoryId" : 3,
-  "ownerId" : 2,
+  "categoryId" : 4,
+  "userId" : 3,
   "name": "분식집",
-  "phoneNumber" : "01012345678",
-  "address" : "분식시 분식동 분식리",
-  "introduction" :  "분식집입니다.",
+  "phone" : "01012345678",
+  "roadAddress" : "춘천시 안마산로 112-1",
+  "detailAddress" : "지하 1층",
+  "introduction" :  "분식집입니다~.",
   "minOrderPrice" : 10000,
   "deliveryFee" : 4000,
   "openStatus" : false
@@ -44,5 +45,11 @@ Content-Type: multipart/form-data; boundary=BOUNDARY123
 Content-Disposition: form-data; name="image"; filename="chicken.jpg"
 Content-Type: image/jpeg
 
-< /Users/minjiwon/Desktop/bappul/api/catalog-service/chicken.jpeg
+< /Users/minjiwon/Desktop/bappul/api/catalog/chicken.jpeg
 --BOUNDARY123--
+
+### 가게 상세 조회
+GET http://localhost:8000/api/v1/stores/1
+
+### 가게 위치 정보 조회
+GET http://localhost:8000/api/v1/stores/1/location
