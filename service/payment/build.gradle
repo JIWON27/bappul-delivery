@@ -28,6 +28,9 @@ dependencies {
     implementation "org.springframework.cloud:spring-cloud-starter-openfeign"
     implementation "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client"
 
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 
     implementation 'org.flywaydb:flyway-core'
@@ -54,5 +57,6 @@ dependencies {
     implementation project(':shared:common-security')
     implementation project(':shared:common-exception')
     implementation project(':shared:message-relay')
+    implementation project(':shared:common-logging')
 }
 
