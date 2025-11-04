@@ -26,6 +26,9 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-mysql'
 
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'
 
@@ -38,5 +41,6 @@ dependencies {
     implementation project(':shared:common-security')
     implementation project(':shared:common-exception')
     implementation project(':shared:common-image')
+    implementation project(':shared:common-logging')
 }
 
