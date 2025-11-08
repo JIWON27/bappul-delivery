@@ -17,6 +17,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+
     implementation 'org.springframework.retry:spring-retry'
     implementation "org.springframework.cloud:spring-cloud-starter-openfeign"
     implementation "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client"
@@ -39,6 +42,7 @@ dependencies {
 
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.rest-assured:rest-assured:5.4.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.12.0'
 
