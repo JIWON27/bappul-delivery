@@ -15,7 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class CatalogAdapterCacheTest {
+class CatalogAdapterTest {
 
   @Autowired
   CatalogAdapter catalogAdapter;
