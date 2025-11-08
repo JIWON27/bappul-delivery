@@ -58,7 +58,6 @@ public class Delivery {
     this.status = status;
   }
 
-
   public void updateRiderUserId(Long riderUserId) {
     this.riderUserId = riderUserId;
   }
@@ -71,15 +70,11 @@ public class Delivery {
     this.status = DeliveryStatus.PICKED_UP;
   }
 
-  public void markAsDelivered() {
-    this.status = DeliveryStatus.DELIVERED;
-  }
-
-  public void markAsCancelled() {
-    this.status = DeliveryStatus.CANCELLED;
-  }
-
   public void markAsDeliverd() {
     this.status = DeliveryStatus.DELIVERED;
+  }
+
+  public void markAsDispatching(){
+    this.status = DeliveryStatus.DISPATCHING;
   }
 }

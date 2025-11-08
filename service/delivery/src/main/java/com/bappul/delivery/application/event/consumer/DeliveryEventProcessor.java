@@ -2,23 +2,20 @@ package com.bappul.delivery.application.event.consumer;
 
 import com.bappul.delivery.application.event.contracts.order.OrderAcceptEvent;
 import com.bappul.delivery.application.event.contracts.order.OrderReadyEvent;
+import com.bappul.delivery.application.service.RiderRedisService;
 import com.bappul.delivery.application.validator.DeliveryValidator;
 import com.bappul.delivery.domain.entity.Delivery;
 import com.bappul.delivery.domain.entity.DeliveryStatus;
 import com.bappul.delivery.domain.repository.DeliveryRepository;
+import com.bappul.delivery.exception.ServiceExceptionCode;
 import com.bappul.event.kafka.KafkaEventProcessor;
+import com.netflix.servo.util.VisibleForTesting;
+import exception.ServiceException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.data.geo.Circle;
-import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.GeoResults;
-import org.springframework.data.geo.Metrics;
 import org.springframework.data.geo.Point;
-import org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation;
-import org.springframework.data.redis.connection.RedisGeoCommands.GeoRadiusCommandArgs;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,10 +26,7 @@ public class DeliveryEventProcessor {
   private final DeliveryRepository deliveryRepository;
   private final KafkaEventProcessor eventProcessor;
   private final DeliveryValidator deliveryValidator;
-
-  private final RedisTemplate<String ,String> redisTemplate;
-  private final String ADMIN_CODE_RIDER_LOCATION = "riders:admin:geo:avail:%s";
-
+  private final RiderRedisService riderRedisService;
 
   @Transactional
   public void processOrderAcceptEvent(ConsumerRecord<String, String> record) {
@@ -48,56 +42,47 @@ public class DeliveryEventProcessor {
     deliveryRepository.save(delivery);
   }
 
-
   @Transactional
   public void processOrderReadyEvent(ConsumerRecord<String, String> record) {
     eventProcessor.handleEvent(record, OrderReadyEvent.class, this::processOrderReadyEventLogic);
   }
 
-  private void processOrderReadyEventLogic(OrderReadyEvent event) {
+  @VisibleForTesting
+  void processOrderReadyEventLogic(OrderReadyEvent event) {
+    final double INITIAL_RADIUS = 0.5;
+    final int RIDER_LIMIT = 3;
+    final int MAX_TRIES = 3;
+    final int MAX_RIDER_LIMIT = 15;
+
     Delivery delivery = deliveryValidator.getByOrderId(event.getOrderId());
+    if (delivery.getStatus() == DeliveryStatus.DISPATCHING ||
+        delivery.getStatus() == DeliveryStatus.ASSIGNED ||
+        delivery.getStatus() == DeliveryStatus.PICKED_UP ||
+        delivery.getStatus() == DeliveryStatus.DELIVERED) {
+      return;
+    }
 
     double storeLatitude = event.getLatitude();
     double storeLongitude = event.getLongitude();
-    String adminCode = event.getAdminCode();
+    List<Long> riderIds = new ArrayList<>();
 
-    double[] radiiKm = {0.5, 1.0, 2.0}; // 점점 라이더 범위 넓히기 위한 배열
+    Point storePoint = new Point(storeLongitude, storeLatitude);
 
-    /**
-     * 가게로부터 범위 근거리 내 라이더 추출
-     */
-    List<String> nearestRiderIds = null;
-    for (double km : radiiKm) {
-      Circle circle = new Circle(
-          new Point(storeLongitude, storeLatitude),
-          new Distance(km, Metrics.KILOMETERS)
-      );
+    double radius = INITIAL_RADIUS;
+    int riderLimit =  RIDER_LIMIT;
+    for (int i=0; i<MAX_TRIES; i++) {
+      riderIds = riderRedisService.findNearbyRiders(storePoint, radius, riderLimit);
+      if (!riderIds.isEmpty()) break;
 
-      GeoRadiusCommandArgs geoRedisCommand = GeoRadiusCommandArgs.newGeoRadiusArgs()
-          .includeDistance()
-          .sortAscending()
-          .limit(3);
-
-      String riderLocationKey = ADMIN_CODE_RIDER_LOCATION.formatted(adminCode);
-      GeoResults<GeoLocation<String>> geoResults = redisTemplate.opsForGeo()
-          .radius(riderLocationKey, circle, geoRedisCommand);
-
-      if (Objects.isNull(geoResults) || geoResults.getContent().isEmpty()) {
-        // 다음 거리로 넘어감
-        continue;
-      }
-
-      nearestRiderIds = geoResults.getContent().stream()
-          .map(geoLocationGeoResult -> geoLocationGeoResult.getContent().getName()).toList();
-      if (!nearestRiderIds.isEmpty()) {
-        break;
-      }
+      radius *=  2.0;
+      riderLimit = Math.min(MAX_RIDER_LIMIT, riderLimit * 2);
     }
 
-    if (Objects.isNull(nearestRiderIds) || nearestRiderIds.isEmpty()) {
-      // TODO 라이더 후보가 한명도 안나왔을 때 인접 행정동으로 이동 등 추가 처리 고민
-      return;
+    if (riderIds.isEmpty()) {
+      throw new ServiceException(ServiceExceptionCode.NO_NEARBY_RIDER);
     }
+
+    delivery.markAsDispatching();
 
     // TODO 추출한 nearestRiderIds 라이더들에게 배달 알림
   }
