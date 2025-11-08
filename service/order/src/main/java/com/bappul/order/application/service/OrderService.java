@@ -3,6 +3,7 @@ package com.bappul.order.application.service;
 import com.bappul.event.outbox.OutboxRecorder;
 import com.bappul.order.adapter.response.CartItemCalculateResponse;
 import com.bappul.order.adapter.response.OptionPrice;
+import com.bappul.order.adapter.response.StoreLocationResponse;
 import com.bappul.order.application.event.contracts.common.AggregateType;
 import com.bappul.order.application.event.contracts.common.EventType;
 import com.bappul.order.application.event.contracts.order.OrderAcceptEvent;
@@ -18,6 +19,7 @@ import com.bappul.order.domain.entitiy.OrderStatus;
 import com.bappul.order.domain.repository.OrderItemOptionRepository;
 import com.bappul.order.domain.repository.OrderItemRepository;
 import com.bappul.order.domain.repository.OrderRepository;
+import com.bappul.order.port.CatalogPort;
 import com.bappul.order.port.PaymentCommandPort;
 import com.bappul.order.web.v1.request.OrderRequest;
 import com.bappul.order.web.v1.response.OrderResponse;
@@ -39,7 +41,8 @@ public class OrderService {
   private final OrderItemOptionRepository orderItemOptionRepository;
 
   private final OutboxRecorder outboxRecorder;
-  private final OrderQuoteService orderQuoteService;
+  private final OrderQuoteService orderQuoteService; // 여기서도 CatalogPort를 사용하는데 ..
+  private final CatalogPort catalogPort;
   private final PaymentCommandPort paymentCommandPort;
 
   private final OrderValidator orderValidator;
@@ -53,6 +56,7 @@ public class OrderService {
       return orderMapper.toOrderResponse(order);
     }
 
+    // 한 트랜잭션 안에 외부 호출이 있으니 DB 커넥션 점유가 오래될꺼같긴하다.
     CalculateResult calculateResult = orderQuoteService.calculatePayablePrice(request, userId);
 
     BigDecimal payablePrice = calculateResult.getPayableTotalPrice();
@@ -166,8 +170,10 @@ public class OrderService {
   public void ready(Long storeId, Long orderId) {
     Order order = orderValidator.getOrderById(orderId);
     orderValidator.validateBelongsToStore(order.getStoreId(), storeId);
-
     orderValidator.validateReadyable(order);
+
+    StoreLocationResponse storeLocation = catalogPort.getLocation(storeId);
+
     order.markAsReady();
 
     outboxRecorder.record(
@@ -178,10 +184,10 @@ public class OrderService {
         order.getId().toString(),
         () -> OrderReadyEvent.builder()
             .orderId(order.getId())
-            .latitude(37.5000) // TODO storeId로 Store 조회 후 할당
-            .longitude(127.0300) // TODO storeId로 Store 조회 후 할당
-            .adminCode("11680640") // TODO storeId로 Store 조회 후 할당
-            .legalCode("11680101") // TODO storeId로 Store 조회 후 할당
+            .latitude(storeLocation.getLatitude())
+            .longitude(storeLocation.getLongitude())
+            .adminCode(storeLocation.getHaengjeongCode())
+            .legalCode(storeLocation.getBeopjeongCode())
             .build()
     );
   }

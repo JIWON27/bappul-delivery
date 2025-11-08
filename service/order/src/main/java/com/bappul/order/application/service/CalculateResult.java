@@ -8,8 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
-@Builder
 @Getter
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CalculateResult {
   BigDecimal orderSubtotalPrice;
@@ -17,5 +17,4 @@ public class CalculateResult {
   BigDecimal payableTotalPrice;
   BigDecimal orderDiscountPrice;
   List<CartItemCalculateResponse> cartItemCalculateResponses;
-
 }

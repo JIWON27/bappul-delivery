@@ -2,7 +2,7 @@ package com.bappul.order.application.service;
 
 import com.bappul.order.adapter.response.CouponDiscountCalculateResponse;
 import com.bappul.order.adapter.response.PricingInternalResponse;
-import com.bappul.order.port.CatalogQuotePort;
+import com.bappul.order.port.CatalogPort;
 import com.bappul.order.port.PromotionQuotePort;
 import com.bappul.order.web.v1.request.OrderItemRequest;
 import com.bappul.order.web.v1.request.OrderRequest;
@@ -16,11 +16,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OrderQuoteService {
 
-  private final CatalogQuotePort catalogQuotePort;
+  private final CatalogPort catalogPort;
   private final PromotionQuotePort promotionQuotePort;
 
   public PricingInternalResponse getCatalogQuote(Long storeId, List<OrderItemRequest> orderItems) {
-    return catalogQuotePort.getQuote(storeId, orderItems);
+    return catalogPort.getQuote(storeId, orderItems);
   }
 
   public CouponDiscountCalculateResponse getPromotionQuote(OrderRequest request, Long userId, BigDecimal totalPrice) {
