@@ -17,8 +17,9 @@ public enum ServiceExceptionCode implements ServiceErrorCode {
   JSON_DESERIALIZATION_ERROR("JSON 역직렬화에 실패했습니다.", 400),
   IDEMPOTENCY_KEY("멱등성 검증 오류", 500),
 
-  NO_NEARBY_RIDER("배차 가능한 라이더가 주변에 없습니다.", 503);
-
+  NO_NEARBY_RIDER("배차 가능한 라이더가 주변에 없습니다.", 503),
+  ALREADY_PROCESSING_OTHER_RIDER("다른 라이더가 해당 배차 건을 처리 중입니다.", 409),
+  ALREADY_PROCESSED_OTHER_RIDER("이미 다른 라이더에게 배차된 배달 건입니다.", 409),
   ;
   final String message;
   final int status;

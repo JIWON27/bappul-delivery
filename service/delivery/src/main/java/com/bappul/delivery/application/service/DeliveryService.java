@@ -5,8 +5,10 @@ import com.bappul.delivery.application.event.contracts.common.EventType;
 import com.bappul.delivery.application.event.contracts.delivery.DeliveryPickUpEvent;
 import com.bappul.delivery.application.validator.DeliveryValidator;
 import com.bappul.delivery.domain.entity.Delivery;
+import com.bappul.delivery.exception.ServiceExceptionCode;
 import com.bappul.delivery.web.v1.request.RiderLocation;
 import com.bappul.event.outbox.OutboxRecorder;
+import exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,19 +20,26 @@ public class DeliveryService {
   private final DeliveryValidator deliveryValidator;
   private final OutboxRecorder outboxRecorder;
   private final RiderRedisService riderRedisService;
+  private final DeliveryDispatchManage deliveryDispatchManage;
 
   @Transactional
   public void deliveryAccept(Long deliveryId, Long riderUserId){
-    /**
-     * 배차 알고리즘 실행 후 라이더들에게 배달 배차 알람이 간 후,
-     * 라이더들 중 배달 배차를 수락하면 실행될 메서드
-     * TODO 배달 접수 시 동시성 고민
-     */
+    if (!deliveryDispatchManage.tryAcquire(deliveryId)) {
+      throw new ServiceException(ServiceExceptionCode.ALREADY_PROCESSING_OTHER_RIDER);
+    }
 
-    Delivery delivery = deliveryValidator.getByDeliveryId(deliveryId);
-    delivery.updateRiderUserId(riderUserId);
-
-    delivery.markAsAssigned();
+    boolean isSuccess = false;
+    try {
+      int updateRow = deliveryValidator.updateDelivery(deliveryId, riderUserId);
+      if (updateRow != 1) {
+        throw new ServiceException(ServiceExceptionCode.ALREADY_PROCESSED_OTHER_RIDER);
+      }
+      isSuccess = true;
+    } finally {
+      if (!isSuccess) {
+        deliveryDispatchManage.reset(deliveryId);
+      }
+    }
   }
 
   @Transactional
@@ -63,6 +72,7 @@ public class DeliveryService {
     );
 
     delivery.markAsDeliverd();
+    deliveryDispatchManage.reset(deliveryId);
   }
 
   @Transactional
